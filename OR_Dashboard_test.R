@@ -1,19 +1,19 @@
 #### LOAD PACKAGES OR INSTALL IF NOT IN LIBRARY ####
 
-library(ggplot2)}#pretty (static) plots
+library(ggplot2)#pretty (static) plots
 
-library(dplyr)}#handy data manipulation tools
+library(dplyr)#handy data manipulation tools
 options(dplyr.summarise.inform = FALSE)#suppress messages to console from summarise function
 
-library(shiny)}#web applications
+library(shiny)#web applications
 
-library(DT)}#interactive tables
+library(DT)#interactive tables
 
-library(plotly)}#interactive plots
+library(plotly)#interactive plots
 
-library(shinythemes)}#layout/themes for app
+library(shinythemes)#layout/themes for app
 
-library(shinyWidgets)}#fancy interactive buttons
+library(shinyWidgets)#fancy interactive buttons
 
 
 #### LOAD AND PREPARE DATA ####
