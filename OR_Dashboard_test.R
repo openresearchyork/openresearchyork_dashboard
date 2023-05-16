@@ -1,33 +1,19 @@
 #### LOAD PACKAGES OR INSTALL IF NOT IN LIBRARY ####
 
-if (!require("ggplot2")) {
-  install.packages("ggplot2") 
-  library(ggplot2)}#pretty (static) plots
+library(ggplot2)}#pretty (static) plots
 
-if (!require("dplyr")) {
-  install.packages("dplyr") 
-  library(dplyr)}#handy data manipulation tools
+library(dplyr)}#handy data manipulation tools
 options(dplyr.summarise.inform = FALSE)#suppress messages to console from summarise function
 
-if (!require("shiny")) {
-  install.packages("shiny") 
-  library(shiny)}#web applications
+library(shiny)}#web applications
 
-if (!require("DT")) {
-  install.packages("DT") 
-  library(DT)}#interactive tables
+library(DT)}#interactive tables
 
-if (!require("plotly")) {
-  install.packages("plotly") 
-  library(plotly)}#interactive plots
+library(plotly)}#interactive plots
 
-if (!require("shinythemes")) {
-  install.packages("shinythemes") 
-  library(shinythemes)}#layout/themes for app
+library(shinythemes)}#layout/themes for app
 
-if (!require("shinyWidgets")) {
-  install.packages("shinyWidgets") 
-  library(shinyWidgets)}#fancy interactive buttons
+library(shinyWidgets)}#fancy interactive buttons
 
 
 #### LOAD AND PREPARE DATA ####
