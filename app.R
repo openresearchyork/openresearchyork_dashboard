@@ -17,6 +17,7 @@ library(shinyWidgets)#fancy interactive buttons
 
 
 #### LOAD AND PREPARE DATA ####
+
 OA<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=T, skip=15)
 
 OA <- OA[1:(nrow(OA)-2),]#update dataframe to delete last rows containing metadata
