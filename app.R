@@ -44,6 +44,33 @@ version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FA
 
 info_text<-paste("Data retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". Bronze access was classed as closed access.", sep="")#create info text to be displayed in app
 
+number_advocates<-35# current number of Open Research Advocates
+
+
+#### DEFINE VALUE BOX ####
+
+valueBox <- function(value, subtitle, icon, color) {
+  div(class = "col-lg-3 col-md-6",
+      div(class = "panel panel-primary",
+          div(class = "panel-heading", style = paste0("background-color:", color),
+              div(class = "row",
+                  div(class = "col-xs-3",
+                      icon(icon, "fa-5x")
+                  ),
+                  div(class = ("col-xs-9 text-right"),
+                      div(style = ("font-size: 56px; font-weight: bold;"),
+                          textOutput(value)
+                      ),
+                      div(subtitle)
+                  )
+              )
+          ),
+          div(class = "panel-footer",
+              div(class = "clearfix")
+          )
+      )
+  )
+}
 
 #### USER INTERFACE ####
 
@@ -77,7 +104,12 @@ ui <- fluidPage(
       #plotOutput('plot_top_10_names'),
       tabsetPanel(
         tabPanel("Plot",
-                 plotly::plotlyOutput('plot_OA')),
+                 plotly::plotlyOutput('plot_OA'),
+                 
+                 valueBox(value = "advocates",
+                          subtitle = "Open Research Advocates",
+                          icon = "users-rays",
+                          color = "#CD6600")),
         tabPanel("Table",
                  DT::DTOutput('table_OA'))
       )
@@ -109,6 +141,10 @@ server <- function(input, output, session){
       scale_y_continuous(labels = scales::percent, limits=c(0,0.8))+
       labs(x="", y="Publications in selected year [%]", fill="Open Access Format")+
       theme_classic(base_size=12)
+  })
+  
+  output$advocates<- renderText({ 
+    number_advocates
   })
   
   #add a table
