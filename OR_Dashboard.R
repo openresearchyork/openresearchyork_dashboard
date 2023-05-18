@@ -39,7 +39,7 @@ OA1<-OA %>%
   mutate(number_Publications_per_Year=sum(number_Publications), 
          prop=round(number_Publications/number_Publications_per_Year, digits=3))
 
-version<-read.csv("https://osf.io/ecrvq/download", header=FALSE, skip=9, nrows=1)#retrieve metadata
+version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata
 
 info_text<-paste("Data retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". Bronze access was classed as closed access.", sep="")#create info text to be displayed in app
 
