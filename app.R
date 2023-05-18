@@ -1,4 +1,4 @@
-#### LOAD PACKAGES OR INSTALL IF NOT IN LIBRARY ####
+#### LOAD PACKAGES ####
 
 library(ggplot2)#pretty (static) plots
 
