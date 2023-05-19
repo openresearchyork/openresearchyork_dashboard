@@ -72,7 +72,6 @@ ui <- fluidPage(
     
     # Main Panel with Plot and Table in Tabs
     mainPanel(
-      #plotOutput('plot_top_10_names'),
       tabsetPanel(
         tabPanel("Plot",
                  plotly::plotlyOutput('plot_OA')),
