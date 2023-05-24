@@ -42,8 +42,6 @@ version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FA
 
 info_text<-HTML(paste("Data retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence<br/> Hybrid Gold = Option to publish open-access in a subscription journal<br/> Bronze = Free to read on the publisher page, but no clear license", sep=""))#create info text to be displayed in app
 
-cat(info_text)
-
 #### Create Custom Slider Options ####
 
 css_slider <- "
