@@ -95,7 +95,8 @@ ui <- fluidPage(
         label = "Select Year", 
         min = 2017, 
         max = 2022, 
-        value = 2021, 
+        value = 2021,
+        step = 1, 
         sep=""),
       actionButton("show_help", "Data source")),
     
