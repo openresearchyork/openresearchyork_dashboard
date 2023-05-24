@@ -43,6 +43,24 @@ version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FA
 info_text<-paste("Data retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ".", sep="")#create info text to be displayed in app
 
 
+#### Create Custom Slider Options ####
+
+css_slider <- "
+#customSlider .irs-bar {
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+}
+#customSlider .irs-bar-edge {
+    border: 1px solid #ddd;
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+}
+#customSlider .irs-line {
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+    border: 1px solid #ddd;
+}
+"
+
 #### USER INTERFACE ####
 
 #sets up the layout of the user interface
@@ -61,10 +79,17 @@ ui <- fluidPage(
         label = "Choose Open Access Format", 
         choices = levels(OA1$Open.Access2),
         selected = levels(OA1$Open.Access2)),
-      pickerInput(
-        inputId = "year", 
-        label = "Select Year", 
-        choices = levels(OA1$Year)),
+      
+      tags$style(type='text/css', css), #add css style from above definition
+      div(id = "customSlider",
+        sliderInput(
+          inputId = "year", 
+          label = "Select Year", 
+          min = 2017,
+          max = 2022,
+          value = 2017, 
+          sep="")),
+      
       actionButton("show_help", "Data source")),
     
     # Main Panel with Plot and Table in Tabs
