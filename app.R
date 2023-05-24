@@ -49,7 +49,7 @@ info_text<-paste("Data retrieved from Unpawall.com via SciVal. All publications 
 ui <- fluidPage(
   #add a title
   titlePanel("Open Access at the University of York"),
-  theme=shinytheme("spacelab"),
+  theme=shinytheme("lumen"),
   
   #arrange ui in two panels next to one another
   sidebarLayout(
@@ -61,13 +61,10 @@ ui <- fluidPage(
         label = "Choose Open Access Format", 
         choices = levels(OA1$Open.Access2),
         selected = levels(OA1$Open.Access2)),
-      sliderInput(
+      pickerInput(
         inputId = "year", 
         label = "Select Year", 
-        min = 2017, 
-        max = 2022, 
-        value = 2021, 
-        sep=""),
+        choices = levels(OA1$Year)),
       actionButton("show_help", "Data source")),
     
     # Main Panel with Plot and Table in Tabs
