@@ -80,7 +80,7 @@ ui <- fluidPage(
         choices = levels(OA1$Open.Access2),
         selected = levels(OA1$Open.Access2)),
       
-      tags$style(type='text/css', css), #add css style from above definition
+      tags$style(type='text/css', css_slider), #add css style from above definition
       div(id = "customSlider",
         sliderInput(
           inputId = "year", 
@@ -90,7 +90,7 @@ ui <- fluidPage(
           value = 2017, 
           sep="")),
       
-      actionButton("show_help", "Data source")),
+      actionButton("show_help", "Further information")),
     
     # Main Panel with Plot and Table in Tabs
     mainPanel(
