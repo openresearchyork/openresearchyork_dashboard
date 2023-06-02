@@ -85,13 +85,14 @@ ui <- fluidPage(
         selected = unique(OA1$`Publication Type`)),
       
       tags$style(type='text/css', css_slider), #add css style from above definition
+      tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),#suppress minor ticks
       div(id = "customSlider",
         sliderInput(
           inputId = "year", 
           label = "Select Year", 
           min = 2017,
           max = 2022,
-          value = 2017, 
+          value = 2020, 
           sep="")),
       
       actionButton("show_help", "Further information")),
