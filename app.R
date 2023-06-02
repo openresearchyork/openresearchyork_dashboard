@@ -23,7 +23,7 @@ library(shinyWidgets)#fancy interactive buttons
 
 OA<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=T, skip=15)
 
-OA <- OA[1:(nrow(OA)-1),]#update dataframe to delete last rows containing metadata
+OA <- OA[1:(nrow(OA)-1),]#update dataframe to delete last row containing metadata
 
 OA$Year<-as.factor(OA$Year)#column 'year' should be a factor ('category') for grouping data
 
@@ -118,19 +118,19 @@ server <- function(input, output, session){
   #reactive conductor to speed up the app (calculations for plot and table done only once)
   rval_OAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(OA1, Year ==input$year & Publication.type %in% input$pubtype)%>%
-      #change order of levels for order of stacked bars
-      mutate(Open.Access2 = factor(Open.Access2, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
-      #summarise the data
-      mutate(generalOA = factor(generalOA), Open.Access2 = factor(Open.Access2))%>%
-      group_by(generalOA, Open.Access2) %>%
-      summarize(prop = sum(prop))
+    subset(OA1, Year ==input$year & Publication.type %in% input$pubtype)
   })
   
   #add a plot
   output$plot_OA<-plotly::renderPlotly({
     # Plot selected year and access
-    rval_OAfiltered() %>% 
+    rval_OAfiltered() %>%
+      #change order of levels for order of stacked bars
+      mutate(Open.Access2 = factor(Open.Access2, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
+      #summarise the data
+      mutate(generalOA = factor(generalOA), Open.Access2 = factor(Open.Access2))%>%
+      group_by(generalOA, Open.Access2) %>%
+      summarize(prop = sum(prop))%>%
       ggplot(aes(x = generalOA, y = prop, fill=Open.Access2)) +
       geom_bar(color="black", stat="identity", size=0.1)+
       scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50"))+
