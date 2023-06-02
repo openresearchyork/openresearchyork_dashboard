@@ -1,11 +1,13 @@
 #### LOAD PACKAGES ####
 
 #install all packages when using R for first time (uncomment below)
-#install.packages("ggplot2", "dplyr", "shiny", "DT", "plotly", "shinythemes", "shinyWidgets")
+#install.packages("readxl", "ggplot2", "tidyverse", "shiny", "DT", "plotly", "shinythemes", "shinyWidgets")
+
+library(readxl)#read excel files
 
 library(ggplot2)#pretty (static) plots
 
-library(dplyr)#handy data manipulation tools
+library(tidyverse)#handy data manipulation tools
 options(dplyr.summarise.inform = FALSE)#suppress messages to console from summarise function
 
 library(shiny)#web applications
@@ -21,6 +23,7 @@ library(shinyWidgets)#fancy interactive buttons
 
 #### LOAD AND PREPARE DATA ####
 
+## Open Access data from SciVal ##
 OA<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=T, skip=15)
 
 OA <- OA[1:(nrow(OA)-1),]#update dataframe to delete last row containing metadata
@@ -46,6 +49,17 @@ OA1<-OA %>%
 version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata
 
 info_text<-HTML(paste("Data retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license", sep=""))#create info text to be displayed in app
+
+## Transitional agreement and Corresponding author data ## 
+
+scopusCA<-list.files(path=".", pattern="human.csv$", recursive = T) %>%
+  lapply(read_csv, show_col_types = FALSE) %>% 
+  bind_rows %>%
+  select("Title", "Year", "Source title", "DOI", "Funding Details", "Correspondence Address", "Publisher", "Abbreviated Source Title", "Document Type", "Open Access")%>%
+  mutate(across(everything(), tolower))%>%
+  rename(Journal=`Source title`)
+
+df <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))
 
 #### Create Custom Slider Options ####
 
@@ -147,7 +161,7 @@ server <- function(input, output, session){
   
   #placeholder plot
   set.seed(1234)
-  pt1 <- qplot(rnorm(500),fill=I("red"),binwidth=0.2,title="plotgraph1")
+  pt1 <- qplot(rnorm(500),fill=I("red"),binwidth=0.2)
   output$plotgraph1 = renderPlot({pt1})
   
   #add OA table
