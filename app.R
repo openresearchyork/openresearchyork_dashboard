@@ -101,7 +101,11 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Plot",
-                 plotly::plotlyOutput('plot_OA')),
+                 fluidRow(
+                   splitLayout(cellWidths = c("75%", "25%"), 
+                               plotly::plotlyOutput('plot_OA'), 
+                               plotOutput("plotgraph1"))
+                 )),
         tabPanel("Table",
                  DT::DTOutput('table_OA'))
       )
@@ -123,7 +127,7 @@ server <- function(input, output, session){
     subset(OA1, Year ==input$year & `Publication Type` %in% input$pubtype)
   })
   
-  #add a plot
+  #add OA plot
   output$plot_OA<-plotly::renderPlotly({
     # Plot selected year and access
     rval_OAfiltered() %>%
@@ -141,7 +145,12 @@ server <- function(input, output, session){
       theme_classic(base_size=12)
   })
   
-  #add a table
+  #placeholder plot
+  set.seed(1234)
+  pt1 <- qplot(rnorm(500),fill=I("red"),binwidth=0.2,title="plotgraph1")
+  output$plotgraph1 = renderPlot({pt1})
+  
+  #add OA table
   output$table_OA <-  DT::renderDT({
     # Table of selected year and access
     rval_OAfiltered()
