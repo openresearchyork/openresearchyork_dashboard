@@ -1,5 +1,8 @@
 #### LOAD PACKAGES ####
 
+#install all packages when using R for first time (uncomment below)
+#install.packages("ggplot2", "dplyr", "shiny", "DT", "plotly", "shinythemes", "shinyWidgets")
+
 library(ggplot2)#pretty (static) plots
 
 library(dplyr)#handy data manipulation tools
