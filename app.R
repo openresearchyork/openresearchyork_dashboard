@@ -27,20 +27,21 @@ OA <- OA[1:(nrow(OA)-1),]#update dataframe to delete last row containing metadat
 
 OA$Year<-as.factor(OA$Year)#column 'year' should be a factor ('category') for grouping data
 
-OA$Open.Access2<-as.factor(OA$Open.Access)#create new column based on 'open access' (should be a factor)
+OA$`Open Access`<-as.factor(OA$Open.Access)#create new column based on 'open access' (should be a factor)
 
-levels(OA$Open.Access2)<-c("Not Open Access", "Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold")# rename some of the levels
+levels(OA$`Open Access`)<-c("Not Open Access", "Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold")# rename some of the levels
 
-OA$generalOA<-ifelse(OA$Open.Access2=="Not Open Access" | OA$Open.Access2=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
+OA$`Access`<-ifelse(OA$`Open Access`=="Not Open Access" | OA$`Open Access`=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
 
 OA1<-OA %>%
   #create summary stats by year and OA format
   filter(!Publication.type %in% c("Erratum", "Retracted", "Article in Press"))%>%
-  group_by(Year, Open.Access2, generalOA, Publication.type)%>%
-  summarise(number_Publications=n())%>%
+  rename(`Publication Type` = Publication.type)%>%
+  group_by(Year, `Open Access`, `Access`, `Publication Type`)%>%
+  summarise(`Number of Publications`=n())%>%
   group_by(Year)%>%
-  mutate(number_Publications_per_Year=sum(number_Publications), 
-         prop=round(number_Publications/number_Publications_per_Year, digits=3))
+  mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
+         `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
 
 version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata
 
@@ -80,8 +81,8 @@ ui <- fluidPage(
       awesomeCheckboxGroup(
         inputId = "pubtype",
         label = "Choose Publication Type", 
-        choices = unique(OA1$Publication.type),
-        selected = unique(OA1$Publication.type)),
+        choices = unique(OA1$`Publication Type`),
+        selected = unique(OA1$`Publication Type`)),
       
       tags$style(type='text/css', css_slider), #add css style from above definition
       div(id = "customSlider",
@@ -118,7 +119,7 @@ server <- function(input, output, session){
   #reactive conductor to speed up the app (calculations for plot and table done only once)
   rval_OAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(OA1, Year ==input$year & Publication.type %in% input$pubtype)
+    subset(OA1, Year ==input$year & `Publication Type` %in% input$pubtype)
   })
   
   #add a plot
@@ -126,12 +127,12 @@ server <- function(input, output, session){
     # Plot selected year and access
     rval_OAfiltered() %>%
       #change order of levels for order of stacked bars
-      mutate(Open.Access2 = factor(Open.Access2, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
+      mutate(`Open Access` = factor(`Open Access`, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
       #summarise the data
-      mutate(generalOA = factor(generalOA), Open.Access2 = factor(Open.Access2))%>%
-      group_by(generalOA, Open.Access2) %>%
-      summarize(prop = sum(prop))%>%
-      ggplot(aes(x = generalOA, y = prop, fill=Open.Access2)) +
+      mutate(`Access` = factor(`Access`), `Open Access` = factor(`Open Access`))%>%
+      group_by(`Access`, `Open Access`) %>%
+      summarize(`Proportion of all` = sum(`Proportion of all`))%>%
+      ggplot(aes(x = `Access`, y = `Proportion of all`, fill=`Open Access`)) +
       geom_bar(color="black", stat="identity", size=0.1)+
       scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50"))+
       scale_y_continuous(labels = scales::percent, limits=c(0,0.8))+
@@ -143,7 +144,7 @@ server <- function(input, output, session){
   output$table_OA <-  DT::renderDT({
     # Table of selected year and access
     rval_OAfiltered()
-  })
+  }, rownames=FALSE)
 }
 
 
