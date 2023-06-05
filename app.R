@@ -107,7 +107,8 @@ ui <- fluidPage(
           min = 2017,
           max = 2022,
           value = 2020, 
-          sep="")),
+          sep="",
+          width='80%')),
       
       actionButton("show_help", "Further information")),
     
