@@ -21,6 +21,7 @@ library(shinythemes)#layout/themes for app
 library(shinyWidgets)#fancy interactive buttons
 
 
+
 #### LOAD AND PREPARE DATA ####
 
 ## Open Access data from SciVal ##
@@ -50,8 +51,11 @@ version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FA
 
 info_text<-HTML(paste("Data retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license", sep=""))#create info text to be displayed in app
 
-## Transitional agreement and Corresponding author data ## 
+## Transitional agreements and corresponding author data ## 
 
+#Data from Scopus was downloaded in chunks of 2000 publications 
+#(every year split in publlications containing and not containing 'human' as a keyword)
+#the below pipe combines the individual download csvs
 scopusCA<-list.files(path=".", pattern="human.csv$", recursive = T) %>%
   lapply(read_csv, show_col_types = FALSE) %>% 
   bind_rows %>%
@@ -59,7 +63,19 @@ scopusCA<-list.files(path=".", pattern="human.csv$", recursive = T) %>%
   mutate(across(everything(), tolower))%>%
   rename(Journal=`Source title`)
 
-df <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))
+#list of publications related to TAs, filtered for only those made OA under TA Deal
+TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
+  filter(`Made OA under deal?`=="Y")%>%
+  mutate(across(everything(), tolower))%>%
+  mutate(across(everything(), str_trim))
+
+#find overlap between list of TA publications and scopus data based on DOI
+linkDOI<-right_join(TA, scopusCA, by="DOI", suffix=c(".TA", ".scopus"))
+
+TAprop<-as.data.frame(with(linkDOI, table(!is.na(Title.TA), Year, `Document Type`)))%>%
+  rename(TA=Var1)%>%
+  filter(Year !="2023", Document.Type!="j. appl. econom.")%>%
+  droplevels()
 
 #### Create Custom Slider Options ####
 
@@ -117,9 +133,9 @@ ui <- fluidPage(
       tabsetPanel(
         tabPanel("Plot",
                  fluidRow(
-                   splitLayout(cellWidths = c("75%", "25%"), 
+                   splitLayout(cellWidths = c("70%", "30%"), 
                                plotly::plotlyOutput('plot_OA'), 
-                               plotOutput("plotgraph1"))
+                               plotOutput('plot_TA'))
                  )),
         tabPanel("Table",
                  DT::DTOutput('table_OA'))
@@ -141,6 +157,10 @@ server <- function(input, output, session){
     # Filter for the selected year and access (inputId in ui)
     subset(OA1, Year ==input$year & `Publication Type` %in% input$pubtype)
   })
+  rval_TAfiltered<-reactive({
+    # Filter for the selected year and access (inputId in ui)
+    subset(TAprop, Year ==input$year & Document.Type %in% tolower(input$pubtype))
+  })
   
   #add OA plot
   output$plot_OA<-plotly::renderPlotly({
@@ -149,9 +169,10 @@ server <- function(input, output, session){
       #change order of levels for order of stacked bars
       mutate(`Open Access` = factor(`Open Access`, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
       #summarise the data
-      mutate(`Access` = factor(`Access`), `Open Access` = factor(`Open Access`))%>%
+      mutate(`Access` = factor(`Access`))%>%
       group_by(`Access`, `Open Access`) %>%
       summarize(`Proportion of all` = sum(`Proportion of all`))%>%
+      #plot the data
       ggplot(aes(x = `Access`, y = `Proportion of all`, fill=`Open Access`)) +
       geom_bar(color="black", stat="identity", size=0.1)+
       scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50"))+
@@ -160,10 +181,18 @@ server <- function(input, output, session){
       theme_classic(base_size=12)
   })
   
-  #placeholder plot
-  set.seed(1234)
-  pt1 <- qplot(rnorm(500),fill=I("red"),binwidth=0.2)
-  output$plotgraph1 = renderPlot({pt1})
+  #add TA plot
+  output$plot_TA<-renderPlot({
+    rval_TAfiltered()%>%
+      #summarise the data
+      group_by(TA) %>%
+      summarize(Freq= sum(Freq))%>%
+      #plot the data
+      ggplot(aes(x="", y=Freq, fill=TA)) +
+    geom_bar(stat="identity", width=1, color="black", size=0.1) +
+    coord_polar("y", start=0) +
+    theme_void()
+  })
   
   #add OA table
   output$table_OA <-  DT::renderDT({
