@@ -20,7 +20,7 @@ library(shinythemes)#layout/themes for app
 
 library(shinyWidgets)#fancy interactive buttons
 
-
+library(ggtext)#manipulate text elements (e.g. bold)
 
 #### LOAD AND PREPARE DATA ####
 
@@ -63,6 +63,9 @@ scopusCA<-list.files(path=".", pattern="human.csv$", recursive = T) %>%
   mutate(across(everything(), tolower))%>%
   rename(Journal=`Source title`)
 
+#add new variable 'york'
+scopusCA$york<-grepl("york", scopusCA$`Correspondence Address`)
+
 #list of publications related to TAs, filtered for only those made OA under TA Deal
 TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
   filter(`Made OA under deal?`=="Y")%>%
@@ -72,10 +75,12 @@ TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range 
 #find overlap between list of TA publications and scopus data based on DOI
 linkDOI<-right_join(TA, scopusCA, by="DOI", suffix=c(".TA", ".scopus"))
 
-TAprop<-as.data.frame(with(linkDOI, table(!is.na(Title.TA), Year, `Document Type`)))%>%
+TAprop<-as.data.frame(with(linkDOI, table(!is.na(Title.TA), Year, `Document Type`, york)))%>%
   rename(TA=Var1)%>%
-  filter(Year !="2023", Document.Type!="j. appl. econom.")%>%
+  filter(Year !="2023", Document.Type!="j. appl. econom.", york=="TRUE")%>%
   droplevels()
+
+  
 
 #### Create Custom Slider Options ####
 
@@ -133,7 +138,7 @@ ui <- fluidPage(
       tabsetPanel(
         tabPanel("Plot",
                  fluidRow(
-                   splitLayout(cellWidths = c("70%", "30%"), 
+                   splitLayout(cellWidths = c("60%", "40%"), 
                                plotly::plotlyOutput('plot_OA'), 
                                plotOutput('plot_TA'))
                  )),
@@ -166,7 +171,7 @@ server <- function(input, output, session){
   output$plot_OA<-plotly::renderPlotly({
     # Plot selected year and access
     rval_OAfiltered() %>%
-      #change order of levels for order of stacked bars
+      #change order of OA levels for order of stacked bars
       mutate(`Open Access` = factor(`Open Access`, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
       #summarise the data
       mutate(`Access` = factor(`Access`))%>%
@@ -187,13 +192,24 @@ server <- function(input, output, session){
       #summarise the data
       group_by(TA) %>%
       summarize(Freq= sum(Freq))%>%
+      ungroup()%>%
+      arrange(Freq)%>%
+      mutate(ypos=cumsum(Freq)-Freq/2)%>%
       #plot the data
       ggplot(aes(x="", y=Freq, fill=TA)) +
-    geom_bar(stat="identity", width=1, color="black", size=0.1) +
-    coord_polar("y", start=0) +
-    theme_void()
+        geom_bar(stat="identity", width=1, color="black", size=0.2) +
+        coord_polar("y", start=0) +
+        scale_fill_discrete(labels=c("Publication type and <br>corresponding author<br>address applicable to TA,<br>**but no TA deal**", "Open access<br>**under TA Deal**"))+
+        labs(fill="", title="Transitional Agreements (TA)\n of University")+
+        geom_text(aes(y = ypos, label = Freq), color = "white", size=6) +
+        theme_void(base_size=15)+
+        theme(legend.position = "top", 
+              plot.title = element_text(margin=margin(30,0,30,0)),
+              legend.text = element_markdown())+
+        guides(fill=guide_legend(nrow=2, byrow=T, keyheight=3))
   })
-  
+
+      
   #add OA table
   output$table_OA <-  DT::renderDT({
     # Table of selected year and access
