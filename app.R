@@ -76,9 +76,10 @@ TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range 
 linkDOI<-right_join(TA, scopusCA, by="DOI", suffix=c(".TA", ".scopus"))
 
 TAprop<-as.data.frame(with(linkDOI, table(!is.na(Title.TA), Year, `Document Type`, york)))%>%
-  rename(TA=Var1)%>%
-  filter(Year !="2023", Document.Type!="j. appl. econom.", york=="TRUE")%>%
-  droplevels()
+  rename(TA=Var1, `Publication Type`=Document.Type, `Number of Publications`=Freq)%>%
+  filter(Year !="2023", `Publication Type`!="j. appl. econom.", york=="TRUE")%>%
+  droplevels()%>%
+  select(-york)
 
   
 
@@ -136,14 +137,16 @@ ui <- fluidPage(
     # Main Panel with Plot and Table in Tabs
     mainPanel(
       tabsetPanel(
-        tabPanel("Plot",
+        tabPanel("Visualisations",
                  fluidRow(
                    splitLayout(cellWidths = c("60%", "40%"), 
                                plotly::plotlyOutput('plot_OA'), 
                                plotOutput('plot_TA'))
                  )),
-        tabPanel("Table",
-                 DT::DTOutput('table_OA'))
+        tabPanel("Open Access Data",
+                 DT::DTOutput('table_OA')),
+        tabPanel("Transformative Agreement Data",
+                 DT::DTOutput('table_TA'))
       )
     )
   )
@@ -164,7 +167,7 @@ server <- function(input, output, session){
   })
   rval_TAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(TAprop, Year ==input$year & Document.Type %in% tolower(input$pubtype))
+    subset(TAprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))
   })
   
   #add OA plot
@@ -191,29 +194,34 @@ server <- function(input, output, session){
     rval_TAfiltered()%>%
       #summarise the data
       group_by(TA) %>%
-      summarize(Freq= sum(Freq))%>%
+      summarize(`Number of Publications`= sum(`Number of Publications`))%>%
       ungroup()%>%
-      arrange(Freq)%>%
-      mutate(ypos=cumsum(Freq)-Freq/2)%>%
+      arrange(`Number of Publications`)%>%
+      mutate(ypos=cumsum(`Number of Publications`)-`Number of Publications`/2)%>%
       #plot the data
-      ggplot(aes(x="", y=Freq, fill=TA)) +
+      ggplot(aes(x="", y=`Number of Publications`, fill=TA)) +
         geom_bar(stat="identity", width=1, color="black", size=0.2) +
         coord_polar("y", start=0) +
         scale_fill_discrete(labels=c("Publication type and <br>corresponding author<br>address applicable to TA,<br>**but no TA deal**", "Open access<br>**under TA Deal**"))+
         labs(fill="", title="Transitional Agreements (TA)\n of University")+
-        geom_text(aes(y = ypos, label = Freq), color = "white", size=6) +
+        geom_text(aes(y = ypos, label = `Number of Publications`), color = "white", size=6) +
         theme_void(base_size=15)+
         theme(legend.position = "top", 
               plot.title = element_text(margin=margin(30,0,30,0)),
               legend.text = element_markdown())+
         guides(fill=guide_legend(nrow=2, byrow=T, keyheight=3))
   })
-
       
   #add OA table
   output$table_OA <-  DT::renderDT({
     # Table of selected year and access
     rval_OAfiltered()
+  }, rownames=FALSE)
+  
+  #add TA table
+  output$table_TA <-  DT::renderDT({
+    # Table of selected year and access
+    rval_TAfiltered()
   }, rownames=FALSE)
 }
 
