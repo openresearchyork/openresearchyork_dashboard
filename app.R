@@ -20,7 +20,6 @@ library(shinythemes)#layout/themes for app
 
 library(shinyWidgets)#fancy interactive buttons
 
-library(ggtext)#manipulate text elements (e.g. bold)
 
 #### LOAD AND PREPARE DATA ####
 
@@ -42,10 +41,7 @@ OA1<-OA %>%
   filter(!Publication.type %in% c("Erratum", "Retracted", "Article in Press"))%>%
   rename(`Publication Type` = Publication.type)%>%
   group_by(Year, `Open Access`, `Access`, `Publication Type`)%>%
-  summarise(`Number of Publications`=n())%>%
-  group_by(Year)%>%
-  mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
-         `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
+  summarise(`Number of Publications`=n())
 
 version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata
 
@@ -163,7 +159,11 @@ server <- function(input, output, session){
   #reactive conductor to speed up the app (calculations for plot and table done only once)
   rval_OAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(OA1, Year ==input$year & `Publication Type` %in% input$pubtype)
+    subset(OA1, Year ==input$year & `Publication Type` %in% input$pubtype)%>%
+      group_by(Year)%>%
+      mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
+             `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
+    
   })
   rval_TAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
@@ -184,7 +184,7 @@ server <- function(input, output, session){
       ggplot(aes(x = `Access`, y = `Proportion of all`, fill=`Open Access`)) +
       geom_bar(color="black", stat="identity", size=0.1)+
       scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50"))+
-      scale_y_continuous(labels = scales::percent, limits=c(0,0.8))+
+      scale_y_continuous(labels = scales::percent, limits=c(0,0.9))+
       labs(x="", y="Publications in selected year [%]", fill="Open Access Format")+
       theme_classic(base_size=12)
   })
@@ -192,7 +192,8 @@ server <- function(input, output, session){
   #add TA plot
   output$plot_TA<-plotly::renderPlotly({
     rval_TAfiltered()%>%
-      mutate(TA = factor(TA, labels = c("Publication type and <br>corresponding author<br>address applicable to TA,<br><b>but no TA deal</b>", "Open access<br><b>under TA Deal</b>")))%>%
+      mutate(TA = factor(TA, labels = c("Publication type and <br>corresponding author<br>address applicable to TA,<br><b>but no TA deal</b>", 
+                                        "Open access<br><b>under TA Deal</b>")))%>%
       plot_ly(values=~`Number of Publications`,labels=~factor(TA),
                       marker = list(colors = c("#4D4D4D", "#CD9B1D"),
                                     line = list(color = "black", width = 0.5)),
