@@ -141,7 +141,7 @@ ui <- fluidPage(
                  fluidRow(
                    splitLayout(cellWidths = c("60%", "40%"), 
                                plotly::plotlyOutput('plot_OA'), 
-                               plotOutput('plot_TA'))
+                               plotly::plotlyOutput('plot_TA'))
                  )),
         tabPanel("Open Access Data",
                  DT::DTOutput('table_OA')),
@@ -190,26 +190,21 @@ server <- function(input, output, session){
   })
   
   #add TA plot
-  output$plot_TA<-renderPlot({
+  output$plot_TA<-plotly::renderPlotly({
     rval_TAfiltered()%>%
-      #summarise the data
-      group_by(TA) %>%
-      summarize(`Number of Publications`= sum(`Number of Publications`))%>%
-      ungroup()%>%
-      arrange(`Number of Publications`)%>%
-      mutate(ypos=cumsum(`Number of Publications`)-`Number of Publications`/2)%>%
-      #plot the data
-      ggplot(aes(x="", y=`Number of Publications`, fill=TA)) +
-        geom_bar(stat="identity", width=1, color="black", size=0.2) +
-        coord_polar("y", start=0) +
-        scale_fill_manual(labels=c("Publication type and <br>corresponding author<br>address applicable to TA,<br>**but no TA deal**", "Open access<br>**under TA Deal**"), values=c("gray30", "goldenrod3"))+
-        labs(fill="", title="Transitional Agreements (TA)\n of University")+
-        geom_text(aes(y = ypos, label = `Number of Publications`), color = "white", size=6) +
-        theme_void(base_size=15)+
-        theme(legend.position = "top", 
-              plot.title = element_text(margin=margin(30,0,30,0)),
-              legend.text = element_markdown())+
-        guides(fill=guide_legend(nrow=2, byrow=T, keyheight=3))
+      mutate(TA = factor(TA, labels = c("Publication type and <br>corresponding author<br>address applicable to TA,<br><b>but no TA deal</b>", "Open access<br><b>under TA Deal</b>")))%>%
+      plot_ly(values=~`Number of Publications`,labels=~factor(TA),
+                      marker = list(colors = c("#4D4D4D", "#CD9B1D"),
+                                    line = list(color = "black", width = 0.5)),
+                      type="pie", hole=0.3,
+                      insidetextfont = list(color = '#FFFFFF')) %>% 
+      layout(margin=list(l=100, r=100, b = 50, t = 180, pad = 0),
+             legend=list(title=list(text="Transformative Agreement (TA)\n by University"), 
+                         xanchor = "center", # use center of legend as anchor
+                         x=0.5,
+                         yanchor='top',
+                         y=2), # put legend in center of x-axis and on top
+             font=list(size = 12.5))
   })
       
   #add OA table
