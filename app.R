@@ -202,7 +202,7 @@ server <- function(input, output, session){
       ggplot(aes(x="", y=`Number of Publications`, fill=TA)) +
         geom_bar(stat="identity", width=1, color="black", size=0.2) +
         coord_polar("y", start=0) +
-        scale_fill_discrete(labels=c("Publication type and <br>corresponding author<br>address applicable to TA,<br>**but no TA deal**", "Open access<br>**under TA Deal**"))+
+        scale_fill_manual(labels=c("Publication type and <br>corresponding author<br>address applicable to TA,<br>**but no TA deal**", "Open access<br>**under TA Deal**"), values=c("gray30", "goldenrod3"))+
         labs(fill="", title="Transitional Agreements (TA)\n of University")+
         geom_text(aes(y = ypos, label = `Number of Publications`), color = "white", size=6) +
         theme_void(base_size=15)+
