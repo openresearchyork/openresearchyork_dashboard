@@ -43,9 +43,7 @@ OA1<-OA %>%
   group_by(Year, `Open Access`, `Access`, `Publication Type`)%>%
   summarise(`Number of Publications`=n())
 
-version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata
-
-info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements (right) collected by the Open Research team (University of York), crosslinked with data from Scopus. Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.", sep=""))#create info text to be displayed in app
+version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata for OA
 
 ## Transitional agreements and corresponding author data ## 
 
@@ -76,7 +74,9 @@ TAprop<-as.data.frame(with(linkDOI, table(!is.na(Title.TA), Year, `Document Type
   filter(Year !="2023", `Publication Type`!="j. appl. econom.")%>%
   droplevels()
 
-  
+versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
+
+info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements (right) collected by the Open Research team (University of York), crosslinked with data from Scopus. Data last updated ",versionTA, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.", sep=""))#create info text to be displayed in app  
 
 #### Create Custom Slider Options ####
 
