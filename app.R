@@ -45,7 +45,7 @@ OA1<-OA %>%
 
 version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata
 
-info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements (right) collected by the Open Research team (University of York), crosslinked with data from Scopus.", sep=""))#create info text to be displayed in app
+info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements (right) collected by the Open Research team (University of York), crosslinked with data from Scopus. Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.", sep=""))#create info text to be displayed in app
 
 ## Transitional agreements and corresponding author data ## 
 
@@ -73,9 +73,8 @@ linkDOI<-right_join(TA, scopusCA, by="DOI", suffix=c(".TA", ".scopus"))
 
 TAprop<-as.data.frame(with(linkDOI, table(!is.na(Title.TA), Year, `Document Type`, york)))%>%
   rename(TA=Var1, `Publication Type`=Document.Type, `Number of Publications`=Freq)%>%
-  filter(Year !="2023", `Publication Type`!="j. appl. econom.", york=="TRUE")%>%
-  droplevels()%>%
-  select(-york)
+  filter(Year !="2023", `Publication Type`!="j. appl. econom.")%>%
+  droplevels()
 
   
 
@@ -115,6 +114,13 @@ ui <- fluidPage(
         label = "Choose Publication Type", 
         choices = unique(OA1$`Publication Type`),
         selected = unique(OA1$`Publication Type`)),
+      
+      materialSwitch(
+        inputId = "yorkCA",
+        label = "TA: corresponding author from York", 
+        value = TRUE,
+        right = TRUE
+      ),
       
       tags$style(type='text/css', css_slider), #add css style from above definition
       tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),#suppress minor ticks
@@ -167,9 +173,11 @@ server <- function(input, output, session){
   })
   rval_TAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(TAprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))
+    subset(TAprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))%>%
+      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
+                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))#don't filter when input switch is 'FALSE'
   })
-  
+    
   #add OA plot
   output$plot_OA<-plotly::renderPlotly({
     # Plot selected year and access
@@ -192,7 +200,7 @@ server <- function(input, output, session){
   #add TA plot
   output$plot_TA<-plotly::renderPlotly({
     rval_TAfiltered()%>%
-      mutate(TA = factor(TA, labels = c("Publication type and <br>corresponding author<br>address applicable to TA,<br><b>but no TA deal</b>", 
+      mutate(TA = factor(TA, labels = c("Publication type (and <br>corresponding author<br>address) applicable to TA,<br><b>but no TA deal</b>", 
                                         "Open access<br><b>under TA Deal</b>")))%>%
       plot_ly(values=~`Number of Publications`,labels=~factor(TA),
                       marker = list(colors = c("#4D4D4D", "#CD9B1D"),
