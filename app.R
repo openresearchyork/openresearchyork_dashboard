@@ -115,11 +115,10 @@ ui <- fluidPage(
         choices = unique(OA1$`Publication Type`),
         selected = unique(OA1$`Publication Type`)),
       
-      materialSwitch(
+      prettySwitch(
         inputId = "yorkCA",
-        label = "TA: corresponding author from York", 
-        value = TRUE,
-        right = TRUE
+        label = "TA: include only corresponding authors\nfrom York", 
+        value = TRUE
       ),
       
       tags$style(type='text/css', css_slider), #add css style from above definition
@@ -175,7 +174,7 @@ server <- function(input, output, session){
     # Filter for the selected year and access (inputId in ui)
     subset(TAprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))%>%
       filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
-                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))#don't filter when input switch is 'FALSE'
+                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
   })
     
   #add OA plot
@@ -225,7 +224,9 @@ server <- function(input, output, session){
   #add TA table
   output$table_TA <-  DT::renderDT({
     # Table of selected year and access
-    rval_TAfiltered()
+    rval_TAfiltered()%>%
+      group_by(TA, `Publication Type`)%>%
+      summarise(`Number of Publications`=sum(`Number of Publications`))
   }, rownames=FALSE)
 }
 
