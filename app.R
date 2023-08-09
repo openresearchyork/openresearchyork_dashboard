@@ -216,18 +216,48 @@ server <- function(input, output, session){
   })
       
   #add OA table
-  output$table_OA <-  DT::renderDT({
+  output$table_OA <-  DT::renderDT(
     # Table of selected year and access
-    rval_OAfiltered()
-  }, rownames=FALSE)
+    DT::datatable(
+    {rval_OAfiltered()},
+    extensions = 'Buttons',
+    
+    options = list(
+      paging = FALSE,
+      searching = TRUE,
+      fixedColumns = TRUE,
+      autoWidth = TRUE,
+      ordering = TRUE,
+      dom = 'tB',
+      buttons = c('copy', 'csv', 'excel')
+    ),
+    
+    class = "display", 
+    rownames = FALSE
+    ))
   
   #add TA table
-  output$table_TA <-  DT::renderDT({
+  output$table_TA <-  DT::renderDT(
     # Table of selected year and access
-    rval_TAfiltered()%>%
+    DT::datatable(
+    {rval_TAfiltered()%>%
       group_by(TA, `Publication Type`)%>%
-      summarise(`Number of Publications`=sum(`Number of Publications`))
-  }, rownames=FALSE)
+      summarise(`Number of Publications`=sum(`Number of Publications`))},
+    extensions = 'Buttons',
+    
+    options = list(
+      paging = FALSE,
+      searching = TRUE,
+      fixedColumns = TRUE,
+      autoWidth = TRUE,
+      ordering = TRUE,
+      dom = 'tB',
+      buttons = c('copy', 'csv', 'excel')
+    ),
+    
+    class = "display", 
+    rownames = FALSE
+    ))
 }
 
 
