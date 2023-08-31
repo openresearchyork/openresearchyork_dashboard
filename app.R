@@ -151,7 +151,7 @@ ui <- fluidPage(
         value = TRUE
       ),
       
-      h5("(Our transformative agreements are only available for corresponding authors from UoY)"),
+      h5("(Our transformative open access publishing agreements are only available for corresponding authors from UoY)"),
       
       tags$style(type='text/css', css_slider), #add css style from above definition
       tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),#suppress minor ticks
@@ -231,7 +231,7 @@ server <- function(input, output, session){
   #add TA plot
   output$plot_TA<-plotly::renderPlotly({
     rval_TAYOAFfiltered()%>%
-      mutate(Route = factor(Route, labels = c("Other/ not open access", "Open access through<br>transformative agreement", "York Open Access Fund")))%>%
+      mutate(Route = factor(Route, labels = c("Other/ not open access", "Open access publishing agreement", "York Open Access Fund")))%>%
       plot_ly(values=~`Number of Publications`,labels=~factor(Route),
                       marker = list(colors = c("#4D4D4D", "#CD9B1D", "#548b54"),
                                     line = list(color = "black", width = 0.5)),
