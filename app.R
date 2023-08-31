@@ -10,6 +10,8 @@ library(ggplot2)#pretty (static) plots
 library(tidyverse)#handy data manipulation tools
 options(dplyr.summarise.inform = FALSE)#suppress messages to console from summarise function
 
+library(fuzzyjoin)#stringdist fuzzy join
+
 library(shiny)#web applications
 
 library(DT)#interactive tables
@@ -45,9 +47,9 @@ OA1<-OA %>%
 
 version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata for OA
 
-## Transitional agreements and corresponding author data ## 
+## Transitional agreements, YOAF and corresponding author data ## 
 
-#Data from Scopus was downloaded in chunks of 2000 publications 
+#Corresponding author data from Scopus was downloaded in chunks of 2000 publications 
 #(every year split in publlications containing and not containing 'human' as a keyword)
 #the below pipe combines the individual download csvs
 scopusCA<-list.files(path=".", pattern="human.csv$", recursive = T) %>%
@@ -64,14 +66,42 @@ scopusCA$york<-grepl("york", scopusCA$`Correspondence Address`)
 TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
   filter(`Made OA under deal?`=="Y")%>%
   mutate(across(everything(), tolower))%>%
-  mutate(across(everything(), str_trim))
+  mutate(across(everything(), str_trim))%>%#removes white space from start and end of string
+  mutate(TA="TA")
 
-#find overlap between list of TA publications and scopus data based on DOI
-linkDOI<-right_join(TA, scopusCA, by="DOI", suffix=c(".TA", ".scopus"))
+#list of publications related to York Open Access fund
+YOAF<-read.csv("YOAF_publications_202308.csv")[,2:8]%>%
+  mutate(across(everything(), tolower))%>%
+  mutate(across(everything(), str_trim))%>%#removes white space from start and end of string
+  mutate(YOAF="YOAF")
 
-TAprop<-as.data.frame(with(linkDOI, table(!is.na(Title.TA), Year, `Document Type`, york)))%>%
-  rename(TA=Var1, `Publication Type`=Document.Type, `Number of Publications`=Freq)%>%
-  filter(Year !="2023", `Publication Type`!="j. appl. econom.")%>%
+#find overlap between list of TA publications, YOAF publications and scopus data based on DOI
+linkDOI<-scopusCA%>%
+  left_join(TA, by="DOI", suffix=c(".scopus", ".TA"))%>%
+  left_join(YOAF, by="DOI", suffix=c(".scopus", "YOAF"))
+
+#overlap based on title-journal combo wherever DOI matching failed - 5 char difference allowed (fuzzy match)
+linktitle<-linkDOI%>%
+  filter(is.na(TA) & is.na(YOAF))%>%
+  stringdist_inner_join(YOAF,
+                       by =c('Title.scopus'='Title.of.article', 
+                             'Journal.scopus'='Journal'), 
+                       max_dist=5, ignore_case=TRUE)%>%
+  stringdist_left_join(TA,
+                        by =c('Title.scopus'='Title', 
+                              'Journal.scopus'='Journal'), 
+                        max_dist=5, ignore_case=TRUE)
+
+#combine DOI matched and journal-title matched publication lists
+linkall<-linkDOI%>%
+  left_join(linktitle, by=c("Title.scopus", "Journal.scopus"))%>%
+  unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
+  unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
+
+TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x)))%>%
+  rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x)%>%
+  unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
+  filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
   droplevels()
 
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
@@ -117,9 +147,11 @@ ui <- fluidPage(
       
       prettySwitch(
         inputId = "yorkCA",
-        label = "TA: include only corresponding authors\nfrom York", 
+        label = "Only publications with corresponding authors from UoY", 
         value = TRUE
       ),
+      
+      h5("(Our transformative agreements are only available for corresponding authors from UoY)"),
       
       tags$style(type='text/css', css_slider), #add css style from above definition
       tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),#suppress minor ticks
@@ -144,9 +176,9 @@ ui <- fluidPage(
                                plotly::plotlyOutput('plot_OA'), 
                                plotly::plotlyOutput('plot_TA'))
                  )),
-        tabPanel("Open Access Data",
+        tabPanel("Open Access Format Data",
                  DT::DTOutput('table_OA')),
-        tabPanel("Transformative Agreement Data",
+        tabPanel("Open Access Route Data",
                  DT::DTOutput('table_TA'))
       )
     )
@@ -170,9 +202,9 @@ server <- function(input, output, session){
              `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
     
   })
-  rval_TAfiltered<-reactive({
+  rval_TAYOAFfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(TAprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))%>%
+    subset(TAYOAFprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))%>%
       filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
                        input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
   })
@@ -198,16 +230,16 @@ server <- function(input, output, session){
   
   #add TA plot
   output$plot_TA<-plotly::renderPlotly({
-    rval_TAfiltered()%>%
-      mutate(TA = factor(TA, labels = c("Publication type (and <br>corresponding author<br>address) applicable to TA,<br><b>but no TA deal</b>", 
-                                        "Open access<br><b>under TA Deal</b>")))%>%
-      plot_ly(values=~`Number of Publications`,labels=~factor(TA),
-                      marker = list(colors = c("#4D4D4D", "#CD9B1D"),
+    rval_TAYOAFfiltered()%>%
+      mutate(Route = factor(Route, labels = c("Other/ not open access", "Open access through<br>transformative agreement", "York Open Access Fund")))%>%
+      plot_ly(values=~`Number of Publications`,labels=~factor(Route),
+                      marker = list(colors = c("#4D4D4D", "#CD9B1D", "#548b54"),
                                     line = list(color = "black", width = 0.5)),
                       type="pie", hole=0.3,
-                      insidetextfont = list(color = '#FFFFFF')) %>% 
+                      insidetextfont = list(color = '#FFFFFF'),
+              texttemplate='%{percent:.2p}') %>% 
       layout(margin=list(l=100, r=100, b = 50, t = 180, pad = 0),
-             legend=list(title=list(text="Transformative Agreement (TA)\n by University"), 
+             legend=list(title=list(text="Open Access Route"), 
                          xanchor = "center", # use center of legend as anchor
                          x=0.5,
                          yanchor='top',
@@ -240,8 +272,8 @@ server <- function(input, output, session){
   output$table_TA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
-    {rval_TAfiltered()%>%
-      group_by(TA, `Publication Type`)%>%
+    {rval_TAYOAFfiltered()%>%
+      group_by(Route, `Publication Type`)%>%
       summarise(`Number of Publications`=sum(`Number of Publications`))},
     extensions = 'Buttons',
     
