@@ -25,42 +25,34 @@ library(shinyWidgets)#fancy interactive buttons
 
 #### LOAD AND PREPARE DATA ####
 
-## Open Access data from SciVal ##
-OA<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=T, skip=15)
+## Open Access data ##
+scopusCA<-list.files(path=".", pattern="^scopusUoY", recursive = T) %>%
+  lapply(read_csv, show_col_types = FALSE) %>% 
+  bind_rows %>%
+  #select("Title", "Year", "Source title", "DOI", "Correspondence Address", "Publisher", "Abbreviated Source Title", "Document Type", "Open Access")%>%
+  mutate(across(everything(), tolower))%>%
+  rename(Journal=`Source title`)
 
-OA <- OA[1:(nrow(OA)-1),]#update dataframe to delete last row containing metadata
+#add new variable 'york' based on corresponding author address
+scopusCA$york<-grepl("york", scopusCA$`Correspondence Address`)
 
-OA$Year<-as.factor(OA$Year)#column 'year' should be a factor ('category') for grouping data
+scopusCA$`Open Access`[is.na(scopusCA$`Open Access`)]<-"Not Open Access"
 
-OA$`Open Access`<-as.factor(OA$Open.Access)#create new column based on 'open access' (should be a factor)
+scopusCA$`Open Access`<-as.factor(scopusCA$`Open Access`)
 
-levels(OA$`Open Access`)<-c("Not Open Access", "Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold")# rename some of the levels
+levels(scopusCA$`Open Access`)<-c("Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold", "Not Open Access")
 
-OA$`Access`<-ifelse(OA$`Open Access`=="Not Open Access" | OA$`Open Access`=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
+scopusCA$Access<-ifelse(scopusCA$`Open Access`=="Not Open Access" | scopusCA$`Open Access`=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
 
-OA1<-OA %>%
+OAscopus<-scopusCA %>%
   #create summary stats by year and OA format
-  filter(!Publication.type %in% c("Erratum", "Retracted", "Article in Press"))%>%
-  rename(`Publication Type` = Publication.type)%>%
-  group_by(Year, `Open Access`, `Access`, `Publication Type`)%>%
+  rename(`Publication Type` = `Document Type`)%>%
+  group_by(Year, `Open Access`, `Access`, `Publication Type`, york)%>%
   summarise(`Number of Publications`=n())
 
 version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata for OA
 
 ## Transitional agreements, YOAF and corresponding author data ## 
-
-#Corresponding author data from Scopus was downloaded in chunks of 2000 publications 
-#(every year split in publlications containing and not containing 'human' as a keyword)
-#the below pipe combines the individual download csvs
-scopusCA<-list.files(path=".", pattern="human.csv$", recursive = T) %>%
-  lapply(read_csv, show_col_types = FALSE) %>% 
-  bind_rows %>%
-  select("Title", "Year", "Source title", "DOI", "Funding Details", "Correspondence Address", "Publisher", "Abbreviated Source Title", "Document Type", "Open Access")%>%
-  mutate(across(everything(), tolower))%>%
-  rename(Journal=`Source title`)
-
-#add new variable 'york'
-scopusCA$york<-grepl("york", scopusCA$`Correspondence Address`)
 
 #list of publications related to TAs, filtered for only those made OA under TA Deal
 TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
@@ -80,6 +72,9 @@ linkDOI<-scopusCA%>%
   left_join(TA, by="DOI", suffix=c(".scopus", ".TA"))%>%
   left_join(YOAF, by="DOI", suffix=c(".scopus", "YOAF"))
 
+#error in stringdist when NA in column that is to be matched
+linkDOI$Journal.scopus[is.na(linkDOI$Journal.scopus)]<-"empty_string"
+
 #overlap based on title-journal combo wherever DOI matching failed - 5 char difference allowed (fuzzy match)
 linktitle<-linkDOI%>%
   filter(is.na(TA) & is.na(YOAF))%>%
@@ -98,6 +93,7 @@ linkall<-linkDOI%>%
   unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
   unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
 
+#calculate number of publications per Year, Document Type, OA route etc.
 TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x)))%>%
   rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x)%>%
   unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
@@ -142,8 +138,8 @@ ui <- fluidPage(
       awesomeCheckboxGroup(
         inputId = "pubtype",
         label = "Choose Publication Type", 
-        choices = unique(OA1$`Publication Type`),
-        selected = unique(OA1$`Publication Type`)),
+        choices = unique(str_to_title(OAscopus$`Publication Type`)),
+        selected = unique(str_to_title(OAscopus$`Publication Type`))),
       
       prettySwitch(
         inputId = "yorkCA",
@@ -196,15 +192,16 @@ server <- function(input, output, session){
   #reactive conductor to speed up the app (calculations for plot and table done only once)
   rval_OAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(OA1, Year ==input$year & `Publication Type` %in% input$pubtype)%>%
+    subset(OAscopus, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
       group_by(Year)%>%
+      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
+                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))%>%
       mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
              `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
-    
   })
   rval_TAYOAFfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(TAYOAFprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))%>%
+    subset(TAYOAFprop, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
       filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
                        input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
   })
