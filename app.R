@@ -25,42 +25,33 @@ library(shinyWidgets)#fancy interactive buttons
 
 #### LOAD AND PREPARE DATA ####
 
-## Open Access data from SciVal ##
-OA<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=T, skip=15)
-
-OA <- OA[1:(nrow(OA)-1),]#update dataframe to delete last row containing metadata
-
-OA$Year<-as.factor(OA$Year)#column 'year' should be a factor ('category') for grouping data
-
-OA$`Open Access`<-as.factor(OA$Open.Access)#create new column based on 'open access' (should be a factor)
-
-levels(OA$`Open Access`)<-c("Not Open Access", "Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold")# rename some of the levels
-
-OA$`Access`<-ifelse(OA$`Open Access`=="Not Open Access" | OA$`Open Access`=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
-
-OA1<-OA %>%
-  #create summary stats by year and OA format
-  filter(!Publication.type %in% c("Erratum", "Retracted", "Article in Press"))%>%
-  rename(`Publication Type` = Publication.type)%>%
-  group_by(Year, `Open Access`, `Access`, `Publication Type`)%>%
-  summarise(`Number of Publications`=n())
-
-version<-read.csv("Publications_at_the_University_of_York_SciVal.csv", header=FALSE, skip=9, nrows=1)#retrieve metadata for OA
-
-## Transitional agreements, YOAF and corresponding author data ## 
-
-#Corresponding author data from Scopus was downloaded in chunks of 2000 publications 
-#(every year split in publlications containing and not containing 'human' as a keyword)
-#the below pipe combines the individual download csvs
-scopusCA<-list.files(path=".", pattern="human.csv$", recursive = T) %>%
+## Open Access data ##
+scopusCA<-list.files(path=".", pattern="^scopusUoY", recursive = T) %>%
   lapply(read_csv, show_col_types = FALSE) %>% 
   bind_rows %>%
-  select("Title", "Year", "Source title", "DOI", "Funding Details", "Correspondence Address", "Publisher", "Abbreviated Source Title", "Document Type", "Open Access")%>%
+  #select("Title", "Year", "Source title", "DOI", "Correspondence Address", "Publisher", "Abbreviated Source Title", "Document Type", "Open Access")%>%
   mutate(across(everything(), tolower))%>%
   rename(Journal=`Source title`)
 
-#add new variable 'york'
+#add new variable 'york' based on corresponding author address
 scopusCA$york<-grepl("york", scopusCA$`Correspondence Address`)
+
+scopusCA$`Open Access`[is.na(scopusCA$`Open Access`)]<-"Not Open Access"
+
+scopusCA$`Open Access`<-as.factor(scopusCA$`Open Access`)
+
+levels(scopusCA$`Open Access`)<-c("Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold", "Not Open Access")
+
+scopusCA$Access<-ifelse(scopusCA$`Open Access`=="Not Open Access" | scopusCA$`Open Access`=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
+
+OAscopus<-scopusCA %>%
+  #create summary stats by year and OA format
+  rename(`Publication Type` = `Document Type`)%>%
+  group_by(Year, `Open Access`, `Access`, `Publication Type`, york)%>%
+  summarise(`Number of Publications`=n())
+
+
+## Transitional agreements, YOAF and corresponding author data ## 
 
 #list of publications related to TAs, filtered for only those made OA under TA Deal
 TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
@@ -80,6 +71,9 @@ linkDOI<-scopusCA%>%
   left_join(TA, by="DOI", suffix=c(".scopus", ".TA"))%>%
   left_join(YOAF, by="DOI", suffix=c(".scopus", "YOAF"))
 
+#error in stringdist when NA in column that is to be matched
+linkDOI$Journal.scopus[is.na(linkDOI$Journal.scopus)]<-"empty_string"
+
 #overlap based on title-journal combo wherever DOI matching failed - 5 char difference allowed (fuzzy match)
 linktitle<-linkDOI%>%
   filter(is.na(TA) & is.na(YOAF))%>%
@@ -98,6 +92,7 @@ linkall<-linkDOI%>%
   unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
   unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
 
+#calculate number of publications per Year, Document Type, OA route etc.
 TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x)))%>%
   rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x)%>%
   unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
@@ -106,7 +101,7 @@ TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type
 
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
 
-info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via SciVal. All publications affiliated with the University of York indexed on Scopus are included, data last updated ", version[,2], ". A short definition of the open access formats are below.<br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements (right) collected by the Open Research team (University of York), crosslinked with data from Scopus. Data last updated ",versionTA, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.<br/> <br/> Please <a href='mailto:lib-open-research@york.ac.uk'> let us know (lib-open-research@york.ac.uk)</a> how you are using the visualisations and data. All data and code is available in our <a href='https://github.com/openresearchyork/openresearchyork_dashboard'> github repository</a>.", sep=""))#create info text to be displayed in app  
+info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via Scopus. All publications affiliated with the University of York indexed on Scopus are included, data last updated 31 August 2023. A short definition of the open access formats are below.<br/> <br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements and York Open Access Fund (right) are collected by the Open Research team (University of York) and enriched with data from Scopus. Data last updated ",versionTA, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.<br/> <br/> Please <a href='mailto:lib-open-research@york.ac.uk'> let us know (lib-open-research@york.ac.uk)</a> how you are using the visualisations and data. All data and code is available in our <a href='https://github.com/openresearchyork/openresearchyork_dashboard'> github repository</a>.", sep=""))#create info text to be displayed in app  
 
 #### Create Custom Slider Options ####
 
@@ -142,13 +137,13 @@ ui <- fluidPage(
       awesomeCheckboxGroup(
         inputId = "pubtype",
         label = "Choose Publication Type", 
-        choices = unique(OA1$`Publication Type`),
-        selected = unique(OA1$`Publication Type`)),
+        choices = unique(str_to_title(OAscopus$`Publication Type`)),
+        selected = 'Article'),
       
       prettySwitch(
         inputId = "yorkCA",
         label = "Only publications with corresponding authors from UoY", 
-        value = TRUE
+        value = FALSE
       ),
       
       h5("(Our transformative open access publishing agreements are only available for corresponding authors from UoY)"),
@@ -161,7 +156,7 @@ ui <- fluidPage(
           label = "Select Year", 
           min = 2017,
           max = 2022,
-          value = 2020, 
+          value = 2022, 
           sep="",
           width='80%')),
       
@@ -196,15 +191,16 @@ server <- function(input, output, session){
   #reactive conductor to speed up the app (calculations for plot and table done only once)
   rval_OAfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(OA1, Year ==input$year & `Publication Type` %in% input$pubtype)%>%
+    subset(OAscopus, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
       group_by(Year)%>%
+      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
+                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))%>%
       mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
              `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
-    
   })
   rval_TAYOAFfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
-    subset(TAYOAFprop, Year ==input$year & `Publication Type` %in% tolower(input$pubtype))%>%
+    subset(TAYOAFprop, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
       filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
                        input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
   })
