@@ -22,6 +22,7 @@ library(shinythemes)#layout/themes for app
 
 library(shinyWidgets)#fancy interactive buttons
 
+library(ggalluvial)# for alluvial ggplots
 
 #### LOAD AND PREPARE DATA ####
 
@@ -93,14 +94,13 @@ linkall<-linkDOI%>%
   unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
 
 #calculate number of publications per Year, Document Type, OA route etc.
-TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x)))%>%
-  rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x)%>%
+TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x, `Open Access.x`)))%>%
+  rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x, `Open Access`=Open.Access.x)%>%
   unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
   filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
   droplevels()
 
 TAYOAFprop$Route[TAYOAFprop$Route==""]<-"other"
-
 
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
 
@@ -171,7 +171,7 @@ ui <- fluidPage(
         tabPanel("Visualisations",
                  fluidRow(
                    splitLayout(cellWidths = c("60%", "40%"), 
-                               plotly::plotlyOutput('plot_OA'), 
+                               plotOutput('plot_OA'), 
                                plotly::plotlyOutput('plot_TA'))
                  )),
         tabPanel("Open Access Format Data",
@@ -209,22 +209,21 @@ server <- function(input, output, session){
   })
     
   #add OA plot
-  output$plot_OA<-plotly::renderPlotly({
+  output$plot_OA<-renderPlot({
     # Plot selected year and access
-    rval_OAfiltered() %>%
+    rval_TAYOAFfiltered() %>%
       #change order of OA levels for order of stacked bars
-      mutate(`Open Access` = factor(`Open Access`, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
-      #summarise the data
-      mutate(`Access` = factor(`Access`))%>%
-      group_by(`Access`, `Open Access`) %>%
-      summarize(`Proportion of all` = sum(`Proportion of all`))%>%
-      #plot the data
-      ggplot(aes(x = `Access`, y = `Proportion of all`, fill=`Open Access`)) +
-      geom_bar(color="black", stat="identity", size=0.1)+
-      scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50"))+
-      scale_y_continuous(labels = scales::percent, limits=c(0,0.9))+
-      labs(x="", y="Publications in selected year [%]", fill="Open Access Format")+
-      theme_classic(base_size=12)
+      group_by(`Open Access`, Route)%>%
+      summarise(`Number of Publications`=sum(`Number of Publications`))%>%
+      mutate(`Open Access` = factor(`Open Access`, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")),
+             Route = factor(Route, levels = c("YOAF", "TA", "other")))%>%
+      ggplot(aes(axis1=`Open Access`, axis2=Route, y=`Number of Publications`))+
+      geom_alluvium(aes(fill=`Open Access`))+
+      geom_stratum(aes(fill=`Open Access`))+
+      geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+      #scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50", "white"))+
+      scale_fill_manual(values=c("coral3", "goldenrod", "palegreen4", "khaki3", "lightgray"))+
+      theme_minimal(base_size = 14)
   })
   
   #add TA plot
