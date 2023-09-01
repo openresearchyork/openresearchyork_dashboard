@@ -99,7 +99,7 @@ TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type
   filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
   droplevels()
 
-TAYOAFprop$Route[is.na(TAYOAFprop$Route)]<-"other"
+TAYOAFprop$Route[TAYOAFprop$Route==""]<-"other"
 
 
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
