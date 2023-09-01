@@ -247,7 +247,9 @@ server <- function(input, output, session){
   output$table_OA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
-    {rval_OAfiltered()},
+    {rval_OAfiltered()%>%
+        group_by(`Open Access`, `Publication Type`)%>%
+        summarise(`Number of Publications`=sum(`Number of Publications`))},
     extensions = 'Buttons',
     
     options = list(
