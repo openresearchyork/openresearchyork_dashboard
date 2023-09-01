@@ -139,12 +139,12 @@ ui <- fluidPage(
         inputId = "pubtype",
         label = "Choose Publication Type", 
         choices = unique(str_to_title(OAscopus$`Publication Type`)),
-        selected = unique(str_to_title(OAscopus$`Publication Type`))),
+        selected = 'Article'),
       
       prettySwitch(
         inputId = "yorkCA",
         label = "Only publications with corresponding authors from UoY", 
-        value = TRUE
+        value = FALSE
       ),
       
       h5("(Our transformative open access publishing agreements are only available for corresponding authors from UoY)"),
@@ -157,7 +157,7 @@ ui <- fluidPage(
           label = "Select Year", 
           min = 2017,
           max = 2022,
-          value = 2020, 
+          value = 2022, 
           sep="",
           width='80%')),
       
