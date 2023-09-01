@@ -99,6 +99,9 @@ TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type
   filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
   droplevels()
 
+TAYOAFprop$Route[is.na(TAYOAFprop$Route)]<-"other"
+
+
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
 
 info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via Scopus. All publications affiliated with the University of York indexed on Scopus are included, data last updated 31 August 2023. A short definition of the open access formats are below.<br/> <br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements and York Open Access Fund (right) are collected by the Open Research team (University of York) and enriched with data from Scopus. Data last updated ",versionTA, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.<br/> <br/> Please <a href='mailto:lib-open-research@york.ac.uk'> let us know (lib-open-research@york.ac.uk)</a> how you are using the visualisations and data. All data and code is available in our <a href='https://github.com/openresearchyork/openresearchyork_dashboard'> github repository</a>.", sep=""))#create info text to be displayed in app  
