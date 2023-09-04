@@ -79,13 +79,13 @@ linkDOI$Journal.scopus[is.na(linkDOI$Journal.scopus)]<-"empty_string"
 linktitle<-linkDOI%>%
   filter(is.na(TA) & is.na(YOAF))%>%
   stringdist_inner_join(YOAF,
-                       by =c('Title.scopus'='Title.of.article', 
-                             'Journal.scopus'='Journal'), 
-                       max_dist=5, ignore_case=TRUE)%>%
-  stringdist_left_join(TA,
-                        by =c('Title.scopus'='Title', 
+                        by =c('Title.scopus'='Title.of.article', 
                               'Journal.scopus'='Journal'), 
-                        max_dist=5, ignore_case=TRUE)
+                        max_dist=5, ignore_case=TRUE)%>%
+  stringdist_left_join(TA,
+                       by =c('Title.scopus'='Title', 
+                             'Journal.scopus'='Journal'), 
+                       max_dist=5, ignore_case=TRUE)
 
 #combine DOI matched and journal-title matched publication lists
 linkall<-linkDOI%>%
@@ -154,14 +154,14 @@ ui <- fluidPage(
       tags$style(type='text/css', css_slider), #add css style from above definition
       tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),#suppress minor ticks
       div(id = "customSlider",
-        sliderInput(
-          inputId = "year", 
-          label = "Select Year", 
-          min = 2017,
-          max = 2022,
-          value = 2022, 
-          sep="",
-          width='80%')),
+          sliderInput(
+            inputId = "year", 
+            label = "Select Year", 
+            min = 2017,
+            max = 2022,
+            value = 2022, 
+            sep="",
+            width='80%')),
       
       actionButton("show_help", "Further information")),
     
@@ -188,14 +188,23 @@ server <- function(input, output, session){
   })
   
   #reactive conductor to speed up the app (calculations for plot and table done only once)
+  rval_OAfiltered<-reactive({
+    # Filter for the selected year and access (inputId in ui)
+    subset(OAscopus, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
+      group_by(Year)%>%
+      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
+                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))%>%
+      mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
+             `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
+  })
   rval_TAYOAFfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
     subset(TAYOAFprop, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
       filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
                        input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
   })
-    
-  #add alluvial plot
+  
+  #add OA plot
   output$plot_OA<-renderPlot({
     # Plot selected year and access
     rval_TAYOAFfiltered() %>%
@@ -213,51 +222,51 @@ server <- function(input, output, session){
       theme_minimal(base_size = 14)+
       theme(legend.position = "none")
   })
-      
+  
   #add OA table
   output$table_OA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
-    {rval_TAYOAFfiltered()%>%
-        group_by(`Open Access`, `Publication Type`)%>%
-        summarise(`Number of Publications`=sum(`Number of Publications`))},
-    extensions = 'Buttons',
-    
-    options = list(
-      paging = FALSE,
-      searching = TRUE,
-      fixedColumns = TRUE,
-      autoWidth = TRUE,
-      ordering = TRUE,
-      dom = 'tB',
-      buttons = c('copy', 'csv', 'excel')
-    ),
-    
-    class = "display", 
-    rownames = FALSE
+      {rval_OAfiltered()%>%
+          group_by(`Open Access`, `Publication Type`)%>%
+          summarise(`Number of Publications`=sum(`Number of Publications`))},
+      extensions = 'Buttons',
+      
+      options = list(
+        paging = FALSE,
+        searching = TRUE,
+        fixedColumns = TRUE,
+        autoWidth = TRUE,
+        ordering = TRUE,
+        dom = 'tB',
+        buttons = c('copy', 'csv', 'excel')
+      ),
+      
+      class = "display", 
+      rownames = FALSE
     ))
   
-  #add TA/YOAF table
+  #add TA table
   output$table_TA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
-    {rval_TAYOAFfiltered()%>%
-      group_by(Route, `Publication Type`)%>%
-      summarise(`Number of Publications`=sum(`Number of Publications`))},
-    extensions = 'Buttons',
-    
-    options = list(
-      paging = FALSE,
-      searching = TRUE,
-      fixedColumns = TRUE,
-      autoWidth = TRUE,
-      ordering = TRUE,
-      dom = 'tB',
-      buttons = c('copy', 'csv', 'excel')
-    ),
-    
-    class = "display", 
-    rownames = FALSE
+      {rval_TAYOAFfiltered()%>%
+          group_by(Route, `Publication Type`)%>%
+          summarise(`Number of Publications`=sum(`Number of Publications`))},
+      extensions = 'Buttons',
+      
+      options = list(
+        paging = FALSE,
+        searching = TRUE,
+        fixedColumns = TRUE,
+        autoWidth = TRUE,
+        ordering = TRUE,
+        dom = 'tB',
+        buttons = c('copy', 'csv', 'excel')
+      ),
+      
+      class = "display", 
+      rownames = FALSE
     ))
 }
 
@@ -265,4 +274,3 @@ server <- function(input, output, session){
 #### APP - Pulls UI and Server together ####
 
 shinyApp(ui = ui, server = server)#launch app
-
