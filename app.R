@@ -219,7 +219,7 @@ server <- function(input, output, session){
       geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
       scale_x_discrete(limits = c("Open Access Format", "Open Access Route"), expand = c(.05, .05)) +
       scale_fill_manual(values=c("coral3", "goldenrod", "palegreen4", "khaki3", "lightgray"))+
-      theme_minimal(base_size = 14)+
+      theme_minimal(base_size = 16)+
       theme(legend.position = "none")
   })
   
