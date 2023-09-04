@@ -24,6 +24,8 @@ library(shinyWidgets)#fancy interactive buttons
 
 library(ggalluvial)# for alluvial ggplots
 
+library(data.table)# fast aggregation of large data
+
 #### LOAD AND PREPARE DATA ####
 
 ## Open Access data ##
@@ -106,6 +108,58 @@ versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata",
 
 info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via Scopus. All publications affiliated with the University of York indexed on Scopus are included, data last updated 31 August 2023. A short definition of the open access formats are below.<br/> <br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements and York Open Access Fund (right) are collected by the Open Research team (University of York) and enriched with data from Scopus. Data last updated ",versionTA, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.<br/> <br/> Please <a href='mailto:lib-open-research@york.ac.uk'> let us know (lib-open-research@york.ac.uk)</a> how you are using the visualisations and data. All data and code is available in our <a href='https://github.com/openresearchyork/openresearchyork_dashboard'> github repository</a>.", sep=""))#create info text to be displayed in app  
 
+#function definition: transform data to expected format for sunburst plot
+as.sunburstDF <- function(DF, value_column = NULL, add_root = FALSE){
+  require(data.table)
+  
+  colNamesDF <- names(DF)
+  
+  if(is.data.table(DF)){
+    DT <- copy(DF)
+  } else {
+    DT <- data.table(DF, stringsAsFactors = FALSE)
+  }
+  
+  if(add_root){
+    DT[, root := "UoY Publications"]  
+  }
+  
+  colNamesDT <- names(DT)
+  hierarchy_columns <- setdiff(colNamesDT, value_column)
+  DT[, (hierarchy_columns) := lapply(.SD, as.factor), .SDcols = hierarchy_columns]
+
+  if(is.null(value_column) && add_root){
+    setcolorder(DT, c("root", colNamesDF))
+  } else if(!is.null(value_column) && !add_root) {
+    setnames(DT, value_column, "values", skip_absent=TRUE)
+    setcolorder(DT, c(setdiff(colNamesDF, value_column), "values"))
+  } else if(!is.null(value_column) && add_root) {
+    setnames(DT, value_column, "values", skip_absent=TRUE)
+    setcolorder(DT, c("root", setdiff(colNamesDF, value_column), "values"))
+  }
+  
+  hierarchyList <- list()
+  
+  for(i in seq_along(hierarchy_columns)){
+    current_columns <- colNamesDT[1:i]
+    if(is.null(value_column)){
+      currentDT <- unique(DT[, ..current_columns][, values := .N, by = current_columns], by = current_columns)
+    } else {
+      currentDT <- DT[, lapply(.SD, sum, na.rm = TRUE), by=current_columns, .SDcols = "values"]
+    }
+    setnames(currentDT, length(current_columns), "labels")
+    hierarchyList[[i]] <- currentDT
+  }
+
+  hierarchyDT <- rbindlist(hierarchyList, use.names = TRUE, fill = TRUE)
+  
+  parent_columns <- setdiff(names(hierarchyDT), c("labels", "values", value_column))
+  hierarchyDT[, parents := apply(.SD, 1, function(x){fifelse(all(is.na(x)), yes = NA_character_, no = paste(x[!is.na(x)], sep = ":", collapse = " - "))}), .SDcols = parent_columns]
+  hierarchyDT[, ids := apply(.SD, 1, function(x){paste(x[!is.na(x)], collapse = " - ")}), .SDcols = c("parents", "labels")]
+  hierarchyDT[, c(parent_columns) := NULL]
+  return(hierarchyDT)
+}
+
 #### Create Custom Slider Options ####
 
 css_slider <- "
@@ -171,7 +225,7 @@ ui <- fluidPage(
         tabPanel("Visualisations",
                  fluidRow(
                    splitLayout(cellWidths = c("60%", "40%"), 
-                               plotOutput('plot_OA'), 
+                               plotly::plotlyOutput('plot_OA'), 
                                plotly::plotlyOutput('plot_TA'))
                  )),
         tabPanel("Open Access Format Data",
@@ -192,40 +246,30 @@ server <- function(input, output, session){
   })
   
   #reactive conductor to speed up the app (calculations for plot and table done only once)
-  rval_OAfiltered<-reactive({
-    # Filter for the selected year and access (inputId in ui)
-    subset(OAscopus, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
-      group_by(Year)%>%
-      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
-                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))%>%
-      mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
-             `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
-  })
+  
   rval_TAYOAFfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
     subset(TAYOAFprop, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
-      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
+    filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
                        input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
+  })
+  
+  rval_TAYOAFsunburstfiltered<-reactive({
+    rval_TAYOAFfiltered()%>%
+      group_by(`Open Access`, Route)%>%
+      summarise(`Number of Publications`=sum(`Number of Publications`))
   })
     
   #add OA plot
-  output$plot_OA<-renderPlot({
+  output$plot_OA<-plotly::renderPlotly({
     # Plot selected year and access
-    rval_TAYOAFfiltered() %>%
-      #change order of OA levels for order of stacked bars
-      group_by(`Open Access`, Route)%>%
-      summarise(`Number of Publications`=sum(`Number of Publications`))%>%
-      mutate(`Open Access` = factor(`Open Access`, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")),
-             Route = factor(Route, levels = c("YOAF", "TA", "other")))%>%
-      ggplot(aes(axis1=`Open Access`, axis2=Route, y=`Number of Publications`))+
-      geom_alluvium(aes(fill=`Open Access`))+
-      geom_stratum(aes(fill=`Open Access`))+
-      geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-      #scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50", "white"))+
-      scale_fill_manual(values=c("coral3", "goldenrod", "palegreen4", "khaki3", "lightgray"))+
-      theme_minimal(base_size = 14)
+      plot_ly(data =   as.sunburstDF(rval_TAYOAFsunburstfiltered(), value_column = "Number of Publications", add_root=TRUE), 
+              ids = ~ids, labels= ~labels, parents = ~parents, values= ~values, 
+              marker = list(colors = c("#FFFFFF", "#cd5b45", "#548b54", "#CD9B1D", "#cdc673", "#4D4D4D")),
+              type='sunburst', branchvalues = 'total')
   })
-  
+
+
   #add TA plot
   output$plot_TA<-plotly::renderPlotly({
     rval_TAYOAFfiltered()%>%
