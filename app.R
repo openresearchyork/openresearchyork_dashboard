@@ -169,11 +169,7 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Visualisations",
-                 fluidRow(
-                   splitLayout(cellWidths = c("60%", "40%"), 
-                               plotOutput('plot_OA'), 
-                               plotly::plotlyOutput('plot_TA'))
-                 )),
+                 plotOutput('plot_OA')),
         tabPanel("Open Access Format Data",
                  DT::DTOutput('table_OA')),
         tabPanel("Open Access Route Data",
@@ -192,15 +188,6 @@ server <- function(input, output, session){
   })
   
   #reactive conductor to speed up the app (calculations for plot and table done only once)
-  rval_OAfiltered<-reactive({
-    # Filter for the selected year and access (inputId in ui)
-    subset(OAscopus, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
-      group_by(Year)%>%
-      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
-                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))%>%
-      mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
-             `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
-  })
   rval_TAYOAFfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
     subset(TAYOAFprop, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
@@ -208,7 +195,7 @@ server <- function(input, output, session){
                        input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
   })
     
-  #add OA plot
+  #add alluvial plot
   output$plot_OA<-renderPlot({
     # Plot selected year and access
     rval_TAYOAFfiltered() %>%
@@ -221,35 +208,17 @@ server <- function(input, output, session){
       geom_alluvium(aes(fill=`Open Access`))+
       geom_stratum(aes(fill=`Open Access`))+
       geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-      #scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50", "white"))+
+      scale_x_discrete(limits = c("Open Access Format", "Open Access Route"), expand = c(.05, .05)) +
       scale_fill_manual(values=c("coral3", "goldenrod", "palegreen4", "khaki3", "lightgray"))+
-      theme_minimal(base_size = 14)
-  })
-  
-  #add TA plot
-  output$plot_TA<-plotly::renderPlotly({
-    rval_TAYOAFfiltered()%>%
-      mutate(Route = factor(Route, labels = c("Other/ not open access", "Open access publishing agreement", "York Open Access Fund")))%>%
-      plot_ly(values=~`Number of Publications`,labels=~factor(Route),
-                      marker = list(colors = c("#4D4D4D", "#CD9B1D", "#548b54"),
-                                    line = list(color = "black", width = 0.5)),
-                      type="pie", hole=0.3,
-                      insidetextfont = list(color = '#FFFFFF'),
-              texttemplate='%{percent:.2p}') %>% 
-      layout(margin=list(l=100, r=100, b = 50, t = 180, pad = 0),
-             legend=list(title=list(text="Open Access Route"), 
-                         xanchor = "center", # use center of legend as anchor
-                         x=0.5,
-                         yanchor='top',
-                         y=2), # put legend in center of x-axis and on top
-             font=list(size = 12.5))
+      theme_minimal(base_size = 14)+
+      theme(legend.position = "none")
   })
       
   #add OA table
   output$table_OA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
-    {rval_OAfiltered()%>%
+    {rval_TAYOAFfiltered()%>%
         group_by(`Open Access`, `Publication Type`)%>%
         summarise(`Number of Publications`=sum(`Number of Publications`))},
     extensions = 'Buttons',
@@ -268,7 +237,7 @@ server <- function(input, output, session){
     rownames = FALSE
     ))
   
-  #add TA table
+  #add TA/YOAF table
   output$table_TA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
