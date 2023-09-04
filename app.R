@@ -223,11 +223,7 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Visualisations",
-                 fluidRow(
-                   splitLayout(cellWidths = c("60%", "40%"), 
-                               plotly::plotlyOutput('plot_OA'), 
-                               plotly::plotlyOutput('plot_TA'))
-                 )),
+                 plotly::plotlyOutput('plot_OA')),
         tabPanel("Open Access Format Data",
                  DT::DTOutput('table_OA')),
         tabPanel("Open Access Route Data",
@@ -268,35 +264,15 @@ server <- function(input, output, session){
               marker = list(colors = c("#FFFFFF", "#cd5b45", "#548b54", "#CD9B1D", "#cdc673", "#4D4D4D")),
               type='sunburst', branchvalues = 'total')
   })
-
-
-  #add TA plot
-  output$plot_TA<-plotly::renderPlotly({
-    rval_TAYOAFfiltered()%>%
-      mutate(Route = factor(Route, labels = c("Other/ not open access", "Open access publishing agreement", "York Open Access Fund")))%>%
-      plot_ly(values=~`Number of Publications`,labels=~factor(Route),
-                      marker = list(colors = c("#4D4D4D", "#CD9B1D", "#548b54"),
-                                    line = list(color = "black", width = 0.5)),
-                      type="pie", hole=0.3,
-                      insidetextfont = list(color = '#FFFFFF'),
-              texttemplate='%{percent:.2p}') %>% 
-      layout(margin=list(l=100, r=100, b = 50, t = 180, pad = 0),
-             legend=list(title=list(text="Open Access Route"), 
-                         xanchor = "center", # use center of legend as anchor
-                         x=0.5,
-                         yanchor='top',
-                         y=2), # put legend in center of x-axis and on top
-             font=list(size = 12.5))
-  })
       
   #add OA table
   output$table_OA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
-    {rval_OAfiltered()%>%
-        group_by(`Open Access`, `Publication Type`)%>%
-        summarise(`Number of Publications`=sum(`Number of Publications`))},
-    extensions = 'Buttons',
+      {rval_TAYOAFfiltered()%>%
+          group_by(`Open Access`, `Publication Type`)%>%
+          summarise(`Number of Publications`=sum(`Number of Publications`))},
+      extensions = 'Buttons',
     
     options = list(
       paging = FALSE,
