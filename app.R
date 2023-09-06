@@ -43,14 +43,12 @@ scopusCA$`Open Access`[is.na(scopusCA$`Open Access`)]<-"Not Open Access"
 
 scopusCA$`Open Access`<-as.factor(scopusCA$`Open Access`)
 
-levels(scopusCA$`Open Access`)<-c("Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold", "Not Open Access")
-
-scopusCA$Access<-ifelse(scopusCA$`Open Access`=="Not Open Access" | scopusCA$`Open Access`=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
+levels(scopusCA$`Open Access`)<-c("Not Open Access", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold", "Not Open Access")
 
 OAscopus<-scopusCA %>%
   #create summary stats by year and OA format
   rename(`Publication Type` = `Document Type`)%>%
-  group_by(Year, `Open Access`, `Access`, `Publication Type`, york)%>%
+  group_by(Year, `Open Access`, `Publication Type`, york)%>%
   summarise(`Number of Publications`=n())
 
 
@@ -261,7 +259,7 @@ server <- function(input, output, session){
     # Plot selected year and access
       plot_ly(data =   as.sunburstDF(rval_TAYOAFsunburstfiltered(), value_column = "Number of Publications", add_root=TRUE), 
               ids = ~ids, labels= ~labels, parents = ~parents, values= ~values, 
-              marker = list(colors = c("#FFFFFF", "#cd5b45", "#548b54", "#CD9B1D", "#cdc673", "#4D4D4D")),
+              marker = list(colors = c("#FFFFFF", "#4D4D4D", "#548b54", "#CD9B1D", "#cdc673")),
               type='sunburst', branchvalues = 'total')
   })
       
