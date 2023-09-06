@@ -119,7 +119,7 @@ as.sunburstDF <- function(DF, value_column = NULL, add_root = FALSE){
   }
   
   if(add_root){
-    DT[, root := "UoY Publications"]  
+    DT[, root := "UoY\nPublications"]  
   }
   
   colNamesDT <- names(DT)
@@ -221,7 +221,28 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Visualisations",
-                 plotly::plotlyOutput('plot_OA')),
+                 fluidRow(
+                   tags$head(
+                     tags$style(HTML("
+            code {
+                display:block;
+                padding:9.5px;
+                margin:20px;
+                margin-top:10px;
+                font-size:13px;
+                line-height:20px;
+                white-space:pre-wrap;
+                background-color:#F5F5F5;
+                border:1px solid rgba(0,0,0,0);
+                border-radius:4px;
+                color:#4D4D4D;
+                font-family: var(--bs-body-font-family);
+            }"))),
+                   splitLayout(cellWidths = c("70%", "30%"), 
+                               plotly::plotlyOutput('plot_OA'), 
+                               code("Publications are made open access in a variety of formats (Gold, Hybrid Gold and Green, see also 'further information' button on left). Many of our publications are made open access through the York Open Access Fund (YOAF) and  transformative open access publishing agreements (TA).")
+                               ),
+                 )),
         tabPanel("Open Access Format Data",
                  DT::DTOutput('table_OA')),
         tabPanel("Open Access Route Data",
@@ -260,7 +281,7 @@ server <- function(input, output, session){
       plot_ly(data =   as.sunburstDF(rval_TAYOAFsunburstfiltered(), value_column = "Number of Publications", add_root=TRUE), 
               ids = ~ids, labels= ~labels, parents = ~parents, values= ~values, 
               marker = list(colors = c("#FFFFFF", "#4D4D4D", "#548b54", "#CD9B1D", "#cdc673")),
-              type='sunburst', branchvalues = 'total')
+              type='sunburst', branchvalues = 'total', sort=FALSE, rotation=180)
   })
       
   #add OA table
