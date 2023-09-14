@@ -68,39 +68,47 @@ YOAF<-read.csv("YOAF_publications_202308.csv")[,2:8]%>%
   mutate(YOAF="YOAF")
 
 #find overlap between list of TA publications, YOAF publications and scopus data based on DOI
-linkDOI<-scopusCA%>%
-  left_join(TA, by="DOI", suffix=c(".scopus", ".TA"))%>%
-  left_join(YOAF, by="DOI", suffix=c(".scopus", "YOAF"))
+if (file.exists("TAYOAF_OAformat.csv")) {
+  TAYOAFprop<-read.csv("TAYOAF_OAformat.csv")%>%
+    mutate(`Publication Type`=as.factor(Publication.Type), `Open Access`=factor(Open.Access, levels=c("Not Open Access", "Green", "Gold", "Hybrid Gold")), york=as.factor(york), Year=as.factor(Year), `Number of Publications`=Number.of.Publications)
+  
+} else {
+  #run lines within else {} and write TAYOAFprop to csv with write.csv(TAYOAFprop, "TAYOAF_OAformat.csv", rownames=F) whenever changes to scopus data, TA or YOAF data are made
+  linkDOI<-scopusCA%>%
+    left_join(TA, by="DOI", suffix=c(".scopus", ".TA"))%>%
+    left_join(YOAF, by="DOI", suffix=c(".scopus", "YOAF"))
 
-#error in stringdist when NA in column that is to be matched
-linkDOI$Journal.scopus[is.na(linkDOI$Journal.scopus)]<-"empty_string"
+  #error in stringdist when NA in column that is to be matched
+  linkDOI$Journal.scopus[is.na(linkDOI$Journal.scopus)]<-"empty_string"
 
-#overlap based on title-journal combo wherever DOI matching failed - 5 char difference allowed (fuzzy match)
-linktitle<-linkDOI%>%
-  filter(is.na(TA) & is.na(YOAF))%>%
-  stringdist_inner_join(YOAF,
+  #overlap based on title-journal combo wherever DOI matching failed - 5 char difference   allowed (fuzzy match)
+  linktitle<-linkDOI%>%
+    filter(is.na(TA) & is.na(YOAF))%>%
+    stringdist_inner_join(YOAF,
                        by =c('Title.scopus'='Title.of.article', 
                              'Journal.scopus'='Journal'), 
                        max_dist=5, ignore_case=TRUE)%>%
-  stringdist_left_join(TA,
+    stringdist_left_join(TA,
                         by =c('Title.scopus'='Title', 
                               'Journal.scopus'='Journal'), 
                         max_dist=5, ignore_case=TRUE)
 
-#combine DOI matched and journal-title matched publication lists
-linkall<-linkDOI%>%
-  left_join(linktitle, by=c("Title.scopus", "Journal.scopus"))%>%
-  unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
-  unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
+  #combine DOI matched and journal-title matched publication lists
+  linkall<-linkDOI%>%
+    left_join(linktitle, by=c("Title.scopus", "Journal.scopus"))%>%
+    unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
+    unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
 
-#calculate number of publications per Year, Document Type, OA route etc.
-TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x, `Open Access.x`)))%>%
-  rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x, `Open Access`=Open.Access.x)%>%
-  unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
-  filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
-  droplevels()
+  #calculate number of publications per Year, Document Type, OA route etc.
+  TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x, `Open Access.x`)))%>%
+    rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x, `Open Access`=Open.Access.x)%>%
+    unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
+    filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
+    droplevels()
 
 TAYOAFprop$Route[TAYOAFprop$Route==""]<-"other"
+}
+
 
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
 
