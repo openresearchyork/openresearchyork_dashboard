@@ -99,16 +99,25 @@ if (file.exists("TAYOAF_OAformat.csv")) {
     unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
     unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
 
+  #move TA and YOAF publications marked as green or closed to hybrid gold (unpaywall data wrong)
+  linkall<-linkall%>%
+    mutate(`Open Access`=case_when(`Open Access.x`=="Green" & TA1=="TA" ~ "Hybrid Gold",
+                                   `Open Access.x`=="Green" & YOAF1=="YOAF" ~ "Hybrid Gold",
+                                   `Open Access.x`=="Not Open Access" & TA1=="TA" ~ "Hybrid Gold",
+                                   `Open Access.x`=="Not Open Access" & YOAF1=="YOAF" ~ "Hybrid Gold",
+                                   TRUE ~ `Open Access.x`))#else keep value
+
   #calculate number of publications per Year, Document Type, OA route etc.
-  TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x, `Open Access.x`)))%>%
-    rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x, `Open Access`=Open.Access.x)%>%
+  TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x, `Open Access`)))%>%
+    rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x, `Open Access`=Open.Access)%>%
     unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
     filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
     droplevels()
 
 TAYOAFprop$Route[TAYOAFprop$Route==""]<-"other"
-}
 
+write.csv(TAYOAFprop, "TAYOAF_OAformat.csv", row.names = F)
+}
 
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
 
