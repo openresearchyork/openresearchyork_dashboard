@@ -257,7 +257,7 @@ ui <- fluidPage(
             }"))),
                    splitLayout(cellWidths = c("70%", "30%"), 
                                plotly::plotlyOutput('plot_OA'), 
-                               code("Publications are made open access in a variety of formats (Gold, Hybrid Gold and Green, see also 'further information' button on left). Many of our publications are made open access through the York Open Access Fund (YOAF) and  transformative open access publishing agreements (TA).")
+                               code("Publications are made open access in a variety of formats (Gold, Hybrid Gold and Green, see also 'further information' button on left). Many of our publications are made open access through:", span(style = "color:black", tags$a(href="https://www.york.ac.uk/library/research-creativity/open-access/","York Open Access Fund (YOAF) and transformative open access publishing agreements (TA).")))
                                ),
                  )),
         tabPanel("Open Access Format Data",
