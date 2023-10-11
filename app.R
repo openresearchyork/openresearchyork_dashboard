@@ -22,8 +22,6 @@ library(shinythemes)#layout/themes for app
 
 library(shinyWidgets)#fancy interactive buttons
 
-library(ggalluvial)# for alluvial ggplots
-
 library(data.table)# fast aggregation of large data
 
 #### LOAD AND PREPARE DATA ####
@@ -125,7 +123,6 @@ info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawal
 
 #function definition: transform data to expected format for sunburst plot
 as.sunburstDF <- function(DF, value_column = NULL, add_root = FALSE){
-  require(data.table)
   
   colNamesDF <- names(DF)
   
