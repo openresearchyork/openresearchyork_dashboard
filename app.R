@@ -22,6 +22,9 @@ library(shinythemes)#layout/themes for app
 
 library(shinyWidgets)#fancy interactive buttons
 
+library(ggalluvial)# for alluvial ggplots
+
+library(data.table)# fast aggregation of large data
 
 #### LOAD AND PREPARE DATA ####
 
@@ -40,14 +43,12 @@ scopusCA$`Open Access`[is.na(scopusCA$`Open Access`)]<-"Not Open Access"
 
 scopusCA$`Open Access`<-as.factor(scopusCA$`Open Access`)
 
-levels(scopusCA$`Open Access`)<-c("Bronze", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold", "Not Open Access")
-
-scopusCA$Access<-ifelse(scopusCA$`Open Access`=="Not Open Access" | scopusCA$`Open Access`=="Bronze", "Closed Access", "Open Access")#create a new variable that groups into 'closed' and 'open access'
+levels(scopusCA$`Open Access`)<-c("Not Open Access", "Green", "Gold", "Gold", "Green", "Hybrid Gold", "Hybrid Gold", "Not Open Access")
 
 OAscopus<-scopusCA %>%
   #create summary stats by year and OA format
   rename(`Publication Type` = `Document Type`)%>%
-  group_by(Year, `Open Access`, `Access`, `Publication Type`, york)%>%
+  group_by(Year, `Open Access`, `Publication Type`, york)%>%
   summarise(`Number of Publications`=n())
 
 
@@ -67,44 +68,112 @@ YOAF<-read.csv("YOAF_publications_202308.csv")[,2:8]%>%
   mutate(YOAF="YOAF")
 
 #find overlap between list of TA publications, YOAF publications and scopus data based on DOI
-linkDOI<-scopusCA%>%
-  left_join(TA, by="DOI", suffix=c(".scopus", ".TA"))%>%
-  left_join(YOAF, by="DOI", suffix=c(".scopus", "YOAF"))
+if (file.exists("TAYOAF_OAformat.csv")) {
+  TAYOAFprop<-read.csv("TAYOAF_OAformat.csv")%>%
+    mutate(`Publication Type`=as.factor(Publication.Type), `Open Access`=factor(Open.Access, levels=c("Not Open Access", "Green", "Gold", "Hybrid Gold")), york=as.factor(york), Year=as.factor(Year), `Number of Publications`=Number.of.Publications)
+  
+} else {
+  #run lines within else {} and write TAYOAFprop to csv with write.csv(TAYOAFprop, "TAYOAF_OAformat.csv", rownames=F) whenever changes to scopus data, TA or YOAF data are made
+  linkDOI<-scopusCA%>%
+    left_join(TA, by="DOI", suffix=c(".scopus", ".TA"))%>%
+    left_join(YOAF, by="DOI", suffix=c(".scopus", "YOAF"))
 
-#error in stringdist when NA in column that is to be matched
-linkDOI$Journal.scopus[is.na(linkDOI$Journal.scopus)]<-"empty_string"
+  #error in stringdist when NA in column that is to be matched
+  linkDOI$Journal.scopus[is.na(linkDOI$Journal.scopus)]<-"empty_string"
 
-#overlap based on title-journal combo wherever DOI matching failed - 5 char difference allowed (fuzzy match)
-linktitle<-linkDOI%>%
-  filter(is.na(TA) & is.na(YOAF))%>%
-  stringdist_inner_join(YOAF,
+  #overlap based on title-journal combo wherever DOI matching failed - 5 char difference   allowed (fuzzy match)
+  linktitle<-linkDOI%>%
+    filter(is.na(TA) & is.na(YOAF))%>%
+    stringdist_inner_join(YOAF,
                        by =c('Title.scopus'='Title.of.article', 
                              'Journal.scopus'='Journal'), 
                        max_dist=5, ignore_case=TRUE)%>%
-  stringdist_left_join(TA,
+    stringdist_left_join(TA,
                         by =c('Title.scopus'='Title', 
                               'Journal.scopus'='Journal'), 
                         max_dist=5, ignore_case=TRUE)
 
-#combine DOI matched and journal-title matched publication lists
-linkall<-linkDOI%>%
-  left_join(linktitle, by=c("Title.scopus", "Journal.scopus"))%>%
-  unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
-  unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
+  #combine DOI matched and journal-title matched publication lists
+  linkall<-linkDOI%>%
+    left_join(linktitle, by=c("Title.scopus", "Journal.scopus"))%>%
+    unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
+    unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
 
-#calculate number of publications per Year, Document Type, OA route etc.
-TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x)))%>%
-  rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x)%>%
-  unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
-  filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
-  droplevels()
+  #move TA and YOAF publications marked as green or closed to hybrid gold (unpaywall data wrong)
+  linkall<-linkall%>%
+    mutate(`Open Access`=case_when(`Open Access.x`=="Green" & TA1=="TA" ~ "Hybrid Gold",
+                                   `Open Access.x`=="Green" & YOAF1=="YOAF" ~ "Hybrid Gold",
+                                   `Open Access.x`=="Not Open Access" & TA1=="TA" ~ "Hybrid Gold",
+                                   `Open Access.x`=="Not Open Access" & YOAF1=="YOAF" ~ "Hybrid Gold",
+                                   TRUE ~ `Open Access.x`))#else keep value
+
+  #calculate number of publications per Year, Document Type, OA route etc.
+  TAYOAFprop<-as.data.frame(with(linkall, table(TA1, YOAF1, Year.x, `Document Type.x`, york.x, `Open Access`)))%>%
+    rename(TA=TA1,YOAF=YOAF1, `Publication Type`=Document.Type.x, `Number of Publications`=Freq, york=york.x, Year=Year.x, `Open Access`=Open.Access)%>%
+    unite(., col="Route", TA, YOAF, na.rm=T, remove=T, sep="")%>%
+    filter(Year !="2023", `Publication Type`!="j. appl. econom.", Route!="TAYOAF")%>%
+    droplevels()
 
 TAYOAFprop$Route[TAYOAFprop$Route==""]<-"other"
 
+write.csv(TAYOAFprop, "TAYOAF_OAformat.csv", row.names = F)
+}
 
 versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
 
 info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via Scopus. All publications affiliated with the University of York indexed on Scopus are included, data last updated 31 August 2023. A short definition of the open access formats are below.<br/> <br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements and York Open Access Fund (right) are collected by the Open Research team (University of York) and enriched with data from Scopus. Data last updated ",versionTA, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.<br/> <br/> Please <a href='mailto:lib-open-research@york.ac.uk'> let us know (lib-open-research@york.ac.uk)</a> how you are using the visualisations and data. All data and code is available in our <a href='https://github.com/openresearchyork/openresearchyork_dashboard'> github repository</a>.", sep=""))#create info text to be displayed in app  
+
+#function definition: transform data to expected format for sunburst plot
+as.sunburstDF <- function(DF, value_column = NULL, add_root = FALSE){
+  require(data.table)
+  
+  colNamesDF <- names(DF)
+  
+  if(is.data.table(DF)){
+    DT <- copy(DF)
+  } else {
+    DT <- data.table(DF, stringsAsFactors = FALSE)
+  }
+  
+  if(add_root){
+    DT[, root := "UoY\nPublications"]  
+  }
+  
+  colNamesDT <- names(DT)
+  hierarchy_columns <- setdiff(colNamesDT, value_column)
+  DT[, (hierarchy_columns) := lapply(.SD, as.factor), .SDcols = hierarchy_columns]
+
+  if(is.null(value_column) && add_root){
+    setcolorder(DT, c("root", colNamesDF))
+  } else if(!is.null(value_column) && !add_root) {
+    setnames(DT, value_column, "values", skip_absent=TRUE)
+    setcolorder(DT, c(setdiff(colNamesDF, value_column), "values"))
+  } else if(!is.null(value_column) && add_root) {
+    setnames(DT, value_column, "values", skip_absent=TRUE)
+    setcolorder(DT, c("root", setdiff(colNamesDF, value_column), "values"))
+  }
+  
+  hierarchyList <- list()
+  
+  for(i in seq_along(hierarchy_columns)){
+    current_columns <- colNamesDT[1:i]
+    if(is.null(value_column)){
+      currentDT <- unique(DT[, ..current_columns][, values := .N, by = current_columns], by = current_columns)
+    } else {
+      currentDT <- DT[, lapply(.SD, sum, na.rm = TRUE), by=current_columns, .SDcols = "values"]
+    }
+    setnames(currentDT, length(current_columns), "labels")
+    hierarchyList[[i]] <- currentDT
+  }
+
+  hierarchyDT <- rbindlist(hierarchyList, use.names = TRUE, fill = TRUE)
+  
+  parent_columns <- setdiff(names(hierarchyDT), c("labels", "values", value_column))
+  hierarchyDT[, parents := apply(.SD, 1, function(x){fifelse(all(is.na(x)), yes = NA_character_, no = paste(x[!is.na(x)], sep = ":", collapse = " - "))}), .SDcols = parent_columns]
+  hierarchyDT[, ids := apply(.SD, 1, function(x){paste(x[!is.na(x)], collapse = " - ")}), .SDcols = c("parents", "labels")]
+  hierarchyDT[, c(parent_columns) := NULL]
+  return(hierarchyDT)
+}
 
 #### Create Custom Slider Options ####
 
@@ -170,9 +239,26 @@ ui <- fluidPage(
       tabsetPanel(
         tabPanel("Visualisations",
                  fluidRow(
-                   splitLayout(cellWidths = c("60%", "40%"), 
+                   tags$head(
+                     tags$style(HTML("
+            code {
+                display:block;
+                padding:9.5px;
+                margin:20px;
+                margin-top:10px;
+                font-size:13px;
+                line-height:20px;
+                white-space:pre-wrap;
+                background-color:#F5F5F5;
+                border:1px solid rgba(0,0,0,0);
+                border-radius:4px;
+                color:#4D4D4D;
+                font-family: var(--bs-body-font-family);
+            }"))),
+                   splitLayout(cellWidths = c("70%", "30%"), 
                                plotly::plotlyOutput('plot_OA'), 
-                               plotly::plotlyOutput('plot_TA'))
+                               code("Publications are made open access in a variety of formats (Gold, Hybrid Gold and Green, see also 'further information' button on left). Many of our publications are made open access through:", span(style = "color:black", tags$a(href="https://www.york.ac.uk/library/research-creativity/open-access/","York Open Access Fund (YOAF) and transformative open access publishing agreements (TA).")))
+                               ),
                  )),
         tabPanel("Open Access Format Data",
                  DT::DTOutput('table_OA')),
@@ -192,68 +278,37 @@ server <- function(input, output, session){
   })
   
   #reactive conductor to speed up the app (calculations for plot and table done only once)
-  rval_OAfiltered<-reactive({
-    # Filter for the selected year and access (inputId in ui)
-    subset(OAscopus, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
-      group_by(Year)%>%
-      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
-                       input$yorkCA==FALSE ~ york == TRUE | york == FALSE))%>%
-      mutate(`Publication Volume per Year`=sum(`Number of Publications`), 
-             `Proportion of all`=round(`Number of Publications`/`Publication Volume per Year`, digits=3))
-  })
+  
   rval_TAYOAFfiltered<-reactive({
     # Filter for the selected year and access (inputId in ui)
     subset(TAYOAFprop, Year ==input$year & str_to_title(`Publication Type`) %in% input$pubtype)%>%
-      filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
+    filter(case_when(input$yorkCA==TRUE ~  york == TRUE,#filter york CA when input switch is 'TRUE'
                        input$yorkCA==FALSE ~ york == TRUE | york == FALSE))
+  })
+  
+  rval_TAYOAFsunburstfiltered<-reactive({
+    rval_TAYOAFfiltered()%>%
+      group_by(`Open Access`, Route)%>%
+      summarise(`Number of Publications`=sum(`Number of Publications`))
   })
     
   #add OA plot
   output$plot_OA<-plotly::renderPlotly({
     # Plot selected year and access
-    rval_OAfiltered() %>%
-      #change order of OA levels for order of stacked bars
-      mutate(`Open Access` = factor(`Open Access`, levels = c("Hybrid Gold", "Gold", "Green", "Bronze", "Not Open Access")))%>%
-      #summarise the data
-      mutate(`Access` = factor(`Access`))%>%
-      group_by(`Access`, `Open Access`) %>%
-      summarize(`Proportion of all` = sum(`Proportion of all`))%>%
-      #plot the data
-      ggplot(aes(x = `Access`, y = `Proportion of all`, fill=`Open Access`)) +
-      geom_bar(color="black", stat="identity", size=0.1)+
-      scale_fill_manual(values=c("khaki3","goldenrod", "palegreen4", "coral3", "gray50"))+
-      scale_y_continuous(labels = scales::percent, limits=c(0,0.9))+
-      labs(x="", y="Publications in selected year [%]", fill="Open Access Format")+
-      theme_classic(base_size=12)
-  })
-  
-  #add TA plot
-  output$plot_TA<-plotly::renderPlotly({
-    rval_TAYOAFfiltered()%>%
-      mutate(Route = factor(Route, labels = c("Other/ not open access", "Open access publishing agreement", "York Open Access Fund")))%>%
-      plot_ly(values=~`Number of Publications`,labels=~factor(Route),
-                      marker = list(colors = c("#4D4D4D", "#CD9B1D", "#548b54"),
-                                    line = list(color = "black", width = 0.5)),
-                      type="pie", hole=0.3,
-                      insidetextfont = list(color = '#FFFFFF'),
-              texttemplate='%{percent:.2p}') %>% 
-      layout(margin=list(l=100, r=100, b = 50, t = 180, pad = 0),
-             legend=list(title=list(text="Open Access Route"), 
-                         xanchor = "center", # use center of legend as anchor
-                         x=0.5,
-                         yanchor='top',
-                         y=2), # put legend in center of x-axis and on top
-             font=list(size = 12.5))
+      plot_ly(data =   as.sunburstDF(rval_TAYOAFsunburstfiltered(), value_column = "Number of Publications", add_root=TRUE), 
+              ids = ~ids, labels= ~labels, parents = ~parents, values= ~values, 
+              marker = list(colors = c("#FFFFFF", "#4D4D4D", "#548b54", "#CD9B1D", "#cdc673")),
+              type='sunburst', branchvalues = 'total', sort=FALSE, rotation=180)
   })
       
   #add OA table
   output$table_OA <-  DT::renderDT(
     # Table of selected year and access
     DT::datatable(
-    {rval_OAfiltered()%>%
-        group_by(`Open Access`, `Publication Type`)%>%
-        summarise(`Number of Publications`=sum(`Number of Publications`))},
-    extensions = 'Buttons',
+      {rval_TAYOAFfiltered()%>%
+          group_by(`Open Access`, `Publication Type`)%>%
+          summarise(`Number of Publications`=sum(`Number of Publications`))},
+      extensions = 'Buttons',
     
     options = list(
       paging = FALSE,
