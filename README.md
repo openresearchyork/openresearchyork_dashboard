@@ -1,6 +1,6 @@
 # Open Research at York Dashboard
 
-The shiny app created by the Open Research Team (University of York) showcases open research at the University of York (UK) in an interactive dashboard.
+The shiny app created by the Open Research Team (University of York) showcases open research at the University of York (UK) in an [interactive dashboard](https://shiny.york.ac.uk/open_research_at_york/).
 
 Open Access data from Scopus is based on unpaywall.org. The scopus export file must contain the fields 'Open Access', 'Year', 'Correspondence Address', 'Source title', 'DOI' and 'Document Type'. The current version can be replaced (drag and drop if name is the same). The script combines scopus export data from all files starting with scopusUoY. Hence, naming of new scopus data (e.g. for new year) must also start with 'scopusUoY'. When new data is uploaded, the intermediate file 'TAYOAF_OAformat.csv' has to be updated. This happens automatically when the file is deleted.
 
