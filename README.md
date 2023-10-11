@@ -1,4 +1,4 @@
-# Open Research at York Dashboard
+# Open Access at York Dashboard
 
 The shiny app created by the Open Research Team (University of York) showcases open access practices at the University of York (UK) in an [interactive dashboard](https://shiny.york.ac.uk/open_research_at_york/).
 
