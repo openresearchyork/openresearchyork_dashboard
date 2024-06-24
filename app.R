@@ -27,7 +27,8 @@ library(data.table)# fast aggregation of large data
 #### LOAD AND PREPARE DATA ####
 
 ## Open Access data ##
-scopusCA<-list.files(path=".", pattern="^scopusUoY", recursive = T) %>%
+#combine all files that start with 'scopusUoY' and end with 'updated2024.csv'
+scopusCA<-list.files(path=".", pattern="^scopusUoY.*updated2024.csv$", recursive = T) %>%
   lapply(read_csv, show_col_types = FALSE) %>% 
   bind_rows %>%
   #select("Title", "Year", "Source title", "DOI", "Correspondence Address", "Publisher", "Abbreviated Source Title", "Document Type", "Open Access")%>%
@@ -53,7 +54,7 @@ OAscopus<-scopusCA %>%
 ## Transitional agreements, YOAF and corresponding author data ## 
 
 #list of publications related to TAs, filtered for only those made OA under TA Deal
-TA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
+TA <- read_xlsx(path = "OA_TA_publication_list2024.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
   filter(`Made OA under deal?`=="Y")%>%
   mutate(across(everything(), tolower))%>%
   mutate(across(everything(), str_trim))%>%#removes white space from start and end of string
@@ -117,9 +118,9 @@ TAYOAFprop$Route[TAYOAFprop$Route==""]<-"other"
 write.csv(TAYOAFprop, "TAYOAF_OAformat.csv", row.names = F)
 }
 
-versionTA <- read_xlsx(path = "OA_TA_publication_list.xlsx", sheet = "Metadata", range = cell_cols("A"))
+versionTA <- read_xlsx(path = "OA_TA_publication_list2024.xlsx", sheet = "Metadata", range = cell_cols("A"))
 
-info_text<-HTML(paste("Data on open access formats (left) retrieved from Unpawall.com via Scopus. All publications affiliated with the University of York indexed on Scopus are included, data last updated 31 August 2023. A short definition of the open access formats are below.<br/> <br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements and York Open Access Fund (right) are collected by the Open Research team (University of York) and enriched with data from Scopus. Data last updated ",versionTA, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.<br/> <br/> Please <a href='mailto:lib-open-research@york.ac.uk'> let us know (lib-open-research@york.ac.uk)</a> how you are using the visualisations and data. All data and code is available in our <a href='https://github.com/openresearchyork/openresearchyork_dashboard'> github repository</a>.", sep=""))#create info text to be displayed in app  
+info_text<-HTML(paste0("Data on open access formats (left) retrieved from Unpawall.com via Scopus. All publications affiliated with the University of York indexed on Scopus are included, data last updated 31 August 2023. A short definition of the open access formats are below.<br/> <br/> Green = Self-archived in repository<br/> Gold = Available through fully open-access journal under creative commons licence (usually paid)<br/> Hybrid Gold = Option to publish open-access in a subscription journal (usually paid)<br/> Bronze = Free to read on the publisher page, but no clear license<br/> <br/>Data on transformative agreements and York Open Access Fund (right) are collected by the Open Research team (University of York) and enriched with data from Scopus. Data last updated ",versionTA$`Data last updated`, ". Currently, only corresponding authors from the University of York can use our transformative agreements (see filter option). Correspondence address in Scopus was used as a proxy for corresponding author affiliation.<br/> <br/> Please <a href='mailto:lib-open-research@york.ac.uk'> let us know (lib-open-research@york.ac.uk)</a> how you are using the visualisations and data. All data and code is available in our <a href='https://github.com/openresearchyork/openresearchyork_dashboard'> github repository</a>.", sep=""))#create info text to be displayed in app  
 
 #function definition: transform data to expected format for sunburst plot
 as.sunburstDF <- function(DF, value_column = NULL, add_root = FALSE){
@@ -224,7 +225,7 @@ ui <- fluidPage(
           inputId = "year", 
           label = "Select Year", 
           min = 2017,
-          max = 2022,
+          max = 2023,
           value = 2022, 
           sep="",
           width='80%')),
