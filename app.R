@@ -210,14 +210,6 @@ ui <- fluidPage(
         choices = unique(str_to_title(OAscopus$`Publication Type`)),
         selected = 'Article'),
       
-      prettySwitch(
-        inputId = "yorkCA",
-        label = "Only publications with corresponding authors from UoY", 
-        value = FALSE
-      ),
-      
-      h5("(Our transformative open access publishing agreements are only available for corresponding authors from UoY)"),
-      
       tags$style(type='text/css', css_slider), #add css style from above definition
       tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),#suppress minor ticks
       div(id = "customSlider",
@@ -226,9 +218,17 @@ ui <- fluidPage(
           label = "Select Year", 
           min = 2017,
           max = 2023,
-          value = 2022, 
+          value = 2023, 
           sep="",
           width='80%')),
+      
+      prettySwitch(
+        inputId = "yorkCA",
+        label = "Publications with UoY corresponding author", 
+        value = FALSE
+      ),
+      
+      h5("(Only UoY corresponding authors can publish using our TAs (transformative open access publishing agreements))"),
       
       actionButton("show_help", "Further information")),
     
