@@ -196,7 +196,7 @@ css_slider <- "
 #sets up the layout of the user interface
 ui <- fluidPage(
   #add a title
-  titlePanel("Open Access at the University of York"),
+  titlePanel("Open Access Publications at the University of York"),
   theme=shinytheme("lumen"),
   
   #arrange ui in two panels next to one another
@@ -235,7 +235,7 @@ ui <- fluidPage(
     # Main Panel with Plot and Table in Tabs
     mainPanel(
       tabsetPanel(
-        tabPanel("Visualisations",
+        tabPanel("Visualisation",
                  fluidRow(
                    tags$head(
                      tags$style(HTML("
