@@ -270,8 +270,8 @@
 "TA","2022","article","TRUE","Gold",36
 "YOAF","2022","article","TRUE","Gold",65
 "other","2023","article","TRUE","Gold",189
-"TA","2023","article","TRUE","Gold",45
-"YOAF","2023","article","TRUE","Gold",89
+"TA","2023","article","TRUE","Gold",43
+"YOAF","2023","article","TRUE","Gold",91
 "other","2017","book","TRUE","Gold",0
 "TA","2017","book","TRUE","Gold",0
 "YOAF","2017","book","TRUE","Gold",0
@@ -1229,8 +1229,8 @@
 "other","2020","review","FALSE","Hybrid Gold",35
 "TA","2020","review","FALSE","Hybrid Gold",2
 "YOAF","2020","review","FALSE","Hybrid Gold",0
-"other","2021","review","FALSE","Hybrid Gold",46
-"TA","2021","review","FALSE","Hybrid Gold",3
+"other","2021","review","FALSE","Hybrid Gold",45
+"TA","2021","review","FALSE","Hybrid Gold",4
 "YOAF","2021","review","FALSE","Hybrid Gold",1
 "other","2022","review","FALSE","Hybrid Gold",44
 "TA","2022","review","FALSE","Hybrid Gold",3
@@ -1271,11 +1271,11 @@
 "other","2020","article","TRUE","Hybrid Gold",74
 "TA","2020","article","TRUE","Hybrid Gold",120
 "YOAF","2020","article","TRUE","Hybrid Gold",89
-"other","2021","article","TRUE","Hybrid Gold",79
-"TA","2021","article","TRUE","Hybrid Gold",214
+"other","2021","article","TRUE","Hybrid Gold",78
+"TA","2021","article","TRUE","Hybrid Gold",215
 "YOAF","2021","article","TRUE","Hybrid Gold",53
-"other","2022","article","TRUE","Hybrid Gold",61
-"TA","2022","article","TRUE","Hybrid Gold",379
+"other","2022","article","TRUE","Hybrid Gold",60
+"TA","2022","article","TRUE","Hybrid Gold",380
 "YOAF","2022","article","TRUE","Hybrid Gold",19
 "other","2023","article","TRUE","Hybrid Gold",81
 "TA","2023","article","TRUE","Hybrid Gold",507
@@ -1363,7 +1363,7 @@
 "YOAF","2022","data paper","TRUE","Hybrid Gold",0
 "other","2023","data paper","TRUE","Hybrid Gold",0
 "TA","2023","data paper","TRUE","Hybrid Gold",0
-"YOAF","2023","data paper","TRUE","Hybrid Gold",0
+"YOAF","2023","data paper","TRUE","Hybrid Gold",1
 "other","2017","editorial","TRUE","Hybrid Gold",0
 "TA","2017","editorial","TRUE","Hybrid Gold",0
 "YOAF","2017","editorial","TRUE","Hybrid Gold",0

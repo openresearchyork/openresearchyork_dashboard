@@ -55,7 +55,7 @@ OAscopus<-scopusCA %>%
 
 #list of publications related to TAs, filtered for only those made OA under TA Deal
 TA <- read_xlsx(path = "OA_TA_publication_list2024.xlsx", sheet = "Articles", range = cell_cols("A:H"))%>%
-  filter(`Made OA under deal?`=="Y")%>%
+  filter(!is.na(`Deal (leave blank if not made OA under deal)`))%>%
   mutate(across(everything(), tolower))%>%
   mutate(across(everything(), str_trim))%>%#removes white space from start and end of string
   mutate(TA="TA")
