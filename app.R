@@ -98,7 +98,7 @@ if (file.exists("TAYOAF_OAformat.csv")) {
     unite(., col="YOAF1", YOAF, YOAF.x, YOAF.y, na.rm=T, remove=T)%>%
     unite(., col="TA1", TA, TA.x, TA.y, na.rm=T, remove=T)
 
-  #move TA and YOAF publications marked as green or closed to hybrid gold (unpaywall data wrong)
+  #move TA and YOAF publications marked as green or closed to hybrid gold (unpaywall data wrong or labelled as Bronze data - which is not reflected in dashboard)
   linkall<-linkall%>%
     mutate(`Open Access`=case_when(`Open Access.x`=="Green" & TA1=="TA" ~ "Hybrid Gold",
                                    `Open Access.x`=="Green" & YOAF1=="YOAF" ~ "Hybrid Gold",
