@@ -125,27 +125,6 @@
 "other","2023","editorial","FALSE","Gold",9
 "TA","2023","editorial","FALSE","Gold",0
 "YOAF","2023","editorial","FALSE","Gold",0
-"other","2017","erratum","FALSE","Gold",3
-"TA","2017","erratum","FALSE","Gold",0
-"YOAF","2017","erratum","FALSE","Gold",0
-"other","2018","erratum","FALSE","Gold",5
-"TA","2018","erratum","FALSE","Gold",0
-"YOAF","2018","erratum","FALSE","Gold",0
-"other","2019","erratum","FALSE","Gold",8
-"TA","2019","erratum","FALSE","Gold",0
-"YOAF","2019","erratum","FALSE","Gold",0
-"other","2020","erratum","FALSE","Gold",10
-"TA","2020","erratum","FALSE","Gold",0
-"YOAF","2020","erratum","FALSE","Gold",0
-"other","2021","erratum","FALSE","Gold",7
-"TA","2021","erratum","FALSE","Gold",0
-"YOAF","2021","erratum","FALSE","Gold",0
-"other","2022","erratum","FALSE","Gold",10
-"TA","2022","erratum","FALSE","Gold",0
-"YOAF","2022","erratum","FALSE","Gold",0
-"other","2023","erratum","FALSE","Gold",7
-"TA","2023","erratum","FALSE","Gold",0
-"YOAF","2023","erratum","FALSE","Gold",0
 "other","2017","letter","FALSE","Gold",4
 "TA","2017","letter","FALSE","Gold",0
 "YOAF","2017","letter","FALSE","Gold",0
@@ -188,27 +167,6 @@
 "other","2023","note","FALSE","Gold",7
 "TA","2023","note","FALSE","Gold",0
 "YOAF","2023","note","FALSE","Gold",0
-"other","2017","retracted","FALSE","Gold",0
-"TA","2017","retracted","FALSE","Gold",0
-"YOAF","2017","retracted","FALSE","Gold",0
-"other","2018","retracted","FALSE","Gold",0
-"TA","2018","retracted","FALSE","Gold",0
-"YOAF","2018","retracted","FALSE","Gold",0
-"other","2019","retracted","FALSE","Gold",0
-"TA","2019","retracted","FALSE","Gold",0
-"YOAF","2019","retracted","FALSE","Gold",0
-"other","2020","retracted","FALSE","Gold",0
-"TA","2020","retracted","FALSE","Gold",0
-"YOAF","2020","retracted","FALSE","Gold",0
-"other","2021","retracted","FALSE","Gold",2
-"TA","2021","retracted","FALSE","Gold",0
-"YOAF","2021","retracted","FALSE","Gold",0
-"other","2022","retracted","FALSE","Gold",0
-"TA","2022","retracted","FALSE","Gold",0
-"YOAF","2022","retracted","FALSE","Gold",0
-"other","2023","retracted","FALSE","Gold",0
-"TA","2023","retracted","FALSE","Gold",0
-"YOAF","2023","retracted","FALSE","Gold",0
 "other","2017","review","FALSE","Gold",21
 "TA","2017","review","FALSE","Gold",0
 "YOAF","2017","review","FALSE","Gold",0
@@ -377,27 +335,6 @@
 "other","2023","editorial","TRUE","Gold",4
 "TA","2023","editorial","TRUE","Gold",0
 "YOAF","2023","editorial","TRUE","Gold",0
-"other","2017","erratum","TRUE","Gold",0
-"TA","2017","erratum","TRUE","Gold",0
-"YOAF","2017","erratum","TRUE","Gold",0
-"other","2018","erratum","TRUE","Gold",2
-"TA","2018","erratum","TRUE","Gold",0
-"YOAF","2018","erratum","TRUE","Gold",0
-"other","2019","erratum","TRUE","Gold",1
-"TA","2019","erratum","TRUE","Gold",0
-"YOAF","2019","erratum","TRUE","Gold",0
-"other","2020","erratum","TRUE","Gold",5
-"TA","2020","erratum","TRUE","Gold",0
-"YOAF","2020","erratum","TRUE","Gold",0
-"other","2021","erratum","TRUE","Gold",4
-"TA","2021","erratum","TRUE","Gold",0
-"YOAF","2021","erratum","TRUE","Gold",0
-"other","2022","erratum","TRUE","Gold",9
-"TA","2022","erratum","TRUE","Gold",0
-"YOAF","2022","erratum","TRUE","Gold",0
-"other","2023","erratum","TRUE","Gold",2
-"TA","2023","erratum","TRUE","Gold",0
-"YOAF","2023","erratum","TRUE","Gold",0
 "other","2017","letter","TRUE","Gold",4
 "TA","2017","letter","TRUE","Gold",0
 "YOAF","2017","letter","TRUE","Gold",0
@@ -440,27 +377,6 @@
 "other","2023","note","TRUE","Gold",2
 "TA","2023","note","TRUE","Gold",0
 "YOAF","2023","note","TRUE","Gold",1
-"other","2017","retracted","TRUE","Gold",0
-"TA","2017","retracted","TRUE","Gold",0
-"YOAF","2017","retracted","TRUE","Gold",0
-"other","2018","retracted","TRUE","Gold",0
-"TA","2018","retracted","TRUE","Gold",0
-"YOAF","2018","retracted","TRUE","Gold",0
-"other","2019","retracted","TRUE","Gold",0
-"TA","2019","retracted","TRUE","Gold",0
-"YOAF","2019","retracted","TRUE","Gold",0
-"other","2020","retracted","TRUE","Gold",0
-"TA","2020","retracted","TRUE","Gold",0
-"YOAF","2020","retracted","TRUE","Gold",0
-"other","2021","retracted","TRUE","Gold",0
-"TA","2021","retracted","TRUE","Gold",0
-"YOAF","2021","retracted","TRUE","Gold",0
-"other","2022","retracted","TRUE","Gold",0
-"TA","2022","retracted","TRUE","Gold",0
-"YOAF","2022","retracted","TRUE","Gold",0
-"other","2023","retracted","TRUE","Gold",0
-"TA","2023","retracted","TRUE","Gold",0
-"YOAF","2023","retracted","TRUE","Gold",0
 "other","2017","review","TRUE","Gold",16
 "TA","2017","review","TRUE","Gold",0
 "YOAF","2017","review","TRUE","Gold",5
@@ -629,27 +545,6 @@
 "other","2023","editorial","FALSE","Green",8
 "TA","2023","editorial","FALSE","Green",0
 "YOAF","2023","editorial","FALSE","Green",0
-"other","2017","erratum","FALSE","Green",3
-"TA","2017","erratum","FALSE","Green",0
-"YOAF","2017","erratum","FALSE","Green",0
-"other","2018","erratum","FALSE","Green",0
-"TA","2018","erratum","FALSE","Green",0
-"YOAF","2018","erratum","FALSE","Green",0
-"other","2019","erratum","FALSE","Green",0
-"TA","2019","erratum","FALSE","Green",0
-"YOAF","2019","erratum","FALSE","Green",0
-"other","2020","erratum","FALSE","Green",3
-"TA","2020","erratum","FALSE","Green",0
-"YOAF","2020","erratum","FALSE","Green",0
-"other","2021","erratum","FALSE","Green",0
-"TA","2021","erratum","FALSE","Green",0
-"YOAF","2021","erratum","FALSE","Green",0
-"other","2022","erratum","FALSE","Green",0
-"TA","2022","erratum","FALSE","Green",0
-"YOAF","2022","erratum","FALSE","Green",0
-"other","2023","erratum","FALSE","Green",0
-"TA","2023","erratum","FALSE","Green",0
-"YOAF","2023","erratum","FALSE","Green",0
 "other","2017","letter","FALSE","Green",8
 "TA","2017","letter","FALSE","Green",0
 "YOAF","2017","letter","FALSE","Green",0
@@ -692,27 +587,6 @@
 "other","2023","note","FALSE","Green",7
 "TA","2023","note","FALSE","Green",0
 "YOAF","2023","note","FALSE","Green",0
-"other","2017","retracted","FALSE","Green",0
-"TA","2017","retracted","FALSE","Green",0
-"YOAF","2017","retracted","FALSE","Green",0
-"other","2018","retracted","FALSE","Green",0
-"TA","2018","retracted","FALSE","Green",0
-"YOAF","2018","retracted","FALSE","Green",0
-"other","2019","retracted","FALSE","Green",0
-"TA","2019","retracted","FALSE","Green",0
-"YOAF","2019","retracted","FALSE","Green",0
-"other","2020","retracted","FALSE","Green",0
-"TA","2020","retracted","FALSE","Green",0
-"YOAF","2020","retracted","FALSE","Green",0
-"other","2021","retracted","FALSE","Green",0
-"TA","2021","retracted","FALSE","Green",0
-"YOAF","2021","retracted","FALSE","Green",0
-"other","2022","retracted","FALSE","Green",0
-"TA","2022","retracted","FALSE","Green",0
-"YOAF","2022","retracted","FALSE","Green",0
-"other","2023","retracted","FALSE","Green",0
-"TA","2023","retracted","FALSE","Green",0
-"YOAF","2023","retracted","FALSE","Green",0
 "other","2017","review","FALSE","Green",47
 "TA","2017","review","FALSE","Green",0
 "YOAF","2017","review","FALSE","Green",0
@@ -881,27 +755,6 @@
 "other","2023","editorial","TRUE","Green",3
 "TA","2023","editorial","TRUE","Green",0
 "YOAF","2023","editorial","TRUE","Green",0
-"other","2017","erratum","TRUE","Green",0
-"TA","2017","erratum","TRUE","Green",0
-"YOAF","2017","erratum","TRUE","Green",0
-"other","2018","erratum","TRUE","Green",0
-"TA","2018","erratum","TRUE","Green",0
-"YOAF","2018","erratum","TRUE","Green",0
-"other","2019","erratum","TRUE","Green",2
-"TA","2019","erratum","TRUE","Green",0
-"YOAF","2019","erratum","TRUE","Green",0
-"other","2020","erratum","TRUE","Green",1
-"TA","2020","erratum","TRUE","Green",0
-"YOAF","2020","erratum","TRUE","Green",0
-"other","2021","erratum","TRUE","Green",0
-"TA","2021","erratum","TRUE","Green",0
-"YOAF","2021","erratum","TRUE","Green",0
-"other","2022","erratum","TRUE","Green",1
-"TA","2022","erratum","TRUE","Green",0
-"YOAF","2022","erratum","TRUE","Green",0
-"other","2023","erratum","TRUE","Green",0
-"TA","2023","erratum","TRUE","Green",0
-"YOAF","2023","erratum","TRUE","Green",0
 "other","2017","letter","TRUE","Green",6
 "TA","2017","letter","TRUE","Green",0
 "YOAF","2017","letter","TRUE","Green",0
@@ -944,27 +797,6 @@
 "other","2023","note","TRUE","Green",5
 "TA","2023","note","TRUE","Green",0
 "YOAF","2023","note","TRUE","Green",0
-"other","2017","retracted","TRUE","Green",0
-"TA","2017","retracted","TRUE","Green",0
-"YOAF","2017","retracted","TRUE","Green",0
-"other","2018","retracted","TRUE","Green",0
-"TA","2018","retracted","TRUE","Green",0
-"YOAF","2018","retracted","TRUE","Green",0
-"other","2019","retracted","TRUE","Green",0
-"TA","2019","retracted","TRUE","Green",0
-"YOAF","2019","retracted","TRUE","Green",0
-"other","2020","retracted","TRUE","Green",1
-"TA","2020","retracted","TRUE","Green",0
-"YOAF","2020","retracted","TRUE","Green",0
-"other","2021","retracted","TRUE","Green",0
-"TA","2021","retracted","TRUE","Green",0
-"YOAF","2021","retracted","TRUE","Green",0
-"other","2022","retracted","TRUE","Green",0
-"TA","2022","retracted","TRUE","Green",0
-"YOAF","2022","retracted","TRUE","Green",0
-"other","2023","retracted","TRUE","Green",0
-"TA","2023","retracted","TRUE","Green",0
-"YOAF","2023","retracted","TRUE","Green",0
 "other","2017","review","TRUE","Green",43
 "TA","2017","review","TRUE","Green",0
 "YOAF","2017","review","TRUE","Green",0
@@ -1133,27 +965,6 @@
 "other","2023","editorial","FALSE","Hybrid Gold",5
 "TA","2023","editorial","FALSE","Hybrid Gold",0
 "YOAF","2023","editorial","FALSE","Hybrid Gold",0
-"other","2017","erratum","FALSE","Hybrid Gold",2
-"TA","2017","erratum","FALSE","Hybrid Gold",0
-"YOAF","2017","erratum","FALSE","Hybrid Gold",0
-"other","2018","erratum","FALSE","Hybrid Gold",0
-"TA","2018","erratum","FALSE","Hybrid Gold",0
-"YOAF","2018","erratum","FALSE","Hybrid Gold",0
-"other","2019","erratum","FALSE","Hybrid Gold",4
-"TA","2019","erratum","FALSE","Hybrid Gold",0
-"YOAF","2019","erratum","FALSE","Hybrid Gold",0
-"other","2020","erratum","FALSE","Hybrid Gold",5
-"TA","2020","erratum","FALSE","Hybrid Gold",0
-"YOAF","2020","erratum","FALSE","Hybrid Gold",0
-"other","2021","erratum","FALSE","Hybrid Gold",1
-"TA","2021","erratum","FALSE","Hybrid Gold",0
-"YOAF","2021","erratum","FALSE","Hybrid Gold",0
-"other","2022","erratum","FALSE","Hybrid Gold",8
-"TA","2022","erratum","FALSE","Hybrid Gold",0
-"YOAF","2022","erratum","FALSE","Hybrid Gold",0
-"other","2023","erratum","FALSE","Hybrid Gold",4
-"TA","2023","erratum","FALSE","Hybrid Gold",0
-"YOAF","2023","erratum","FALSE","Hybrid Gold",0
 "other","2017","letter","FALSE","Hybrid Gold",0
 "TA","2017","letter","FALSE","Hybrid Gold",0
 "YOAF","2017","letter","FALSE","Hybrid Gold",0
@@ -1196,27 +1007,6 @@
 "other","2023","note","FALSE","Hybrid Gold",6
 "TA","2023","note","FALSE","Hybrid Gold",0
 "YOAF","2023","note","FALSE","Hybrid Gold",0
-"other","2017","retracted","FALSE","Hybrid Gold",0
-"TA","2017","retracted","FALSE","Hybrid Gold",0
-"YOAF","2017","retracted","FALSE","Hybrid Gold",0
-"other","2018","retracted","FALSE","Hybrid Gold",0
-"TA","2018","retracted","FALSE","Hybrid Gold",0
-"YOAF","2018","retracted","FALSE","Hybrid Gold",0
-"other","2019","retracted","FALSE","Hybrid Gold",0
-"TA","2019","retracted","FALSE","Hybrid Gold",0
-"YOAF","2019","retracted","FALSE","Hybrid Gold",0
-"other","2020","retracted","FALSE","Hybrid Gold",0
-"TA","2020","retracted","FALSE","Hybrid Gold",0
-"YOAF","2020","retracted","FALSE","Hybrid Gold",0
-"other","2021","retracted","FALSE","Hybrid Gold",0
-"TA","2021","retracted","FALSE","Hybrid Gold",0
-"YOAF","2021","retracted","FALSE","Hybrid Gold",0
-"other","2022","retracted","FALSE","Hybrid Gold",0
-"TA","2022","retracted","FALSE","Hybrid Gold",0
-"YOAF","2022","retracted","FALSE","Hybrid Gold",0
-"other","2023","retracted","FALSE","Hybrid Gold",0
-"TA","2023","retracted","FALSE","Hybrid Gold",0
-"YOAF","2023","retracted","FALSE","Hybrid Gold",0
 "other","2017","review","FALSE","Hybrid Gold",18
 "TA","2017","review","FALSE","Hybrid Gold",1
 "YOAF","2017","review","FALSE","Hybrid Gold",3
@@ -1385,27 +1175,6 @@
 "other","2023","editorial","TRUE","Hybrid Gold",3
 "TA","2023","editorial","TRUE","Hybrid Gold",2
 "YOAF","2023","editorial","TRUE","Hybrid Gold",0
-"other","2017","erratum","TRUE","Hybrid Gold",1
-"TA","2017","erratum","TRUE","Hybrid Gold",0
-"YOAF","2017","erratum","TRUE","Hybrid Gold",0
-"other","2018","erratum","TRUE","Hybrid Gold",2
-"TA","2018","erratum","TRUE","Hybrid Gold",0
-"YOAF","2018","erratum","TRUE","Hybrid Gold",0
-"other","2019","erratum","TRUE","Hybrid Gold",3
-"TA","2019","erratum","TRUE","Hybrid Gold",0
-"YOAF","2019","erratum","TRUE","Hybrid Gold",0
-"other","2020","erratum","TRUE","Hybrid Gold",3
-"TA","2020","erratum","TRUE","Hybrid Gold",0
-"YOAF","2020","erratum","TRUE","Hybrid Gold",0
-"other","2021","erratum","TRUE","Hybrid Gold",5
-"TA","2021","erratum","TRUE","Hybrid Gold",0
-"YOAF","2021","erratum","TRUE","Hybrid Gold",0
-"other","2022","erratum","TRUE","Hybrid Gold",2
-"TA","2022","erratum","TRUE","Hybrid Gold",0
-"YOAF","2022","erratum","TRUE","Hybrid Gold",0
-"other","2023","erratum","TRUE","Hybrid Gold",1
-"TA","2023","erratum","TRUE","Hybrid Gold",0
-"YOAF","2023","erratum","TRUE","Hybrid Gold",0
 "other","2017","letter","TRUE","Hybrid Gold",0
 "TA","2017","letter","TRUE","Hybrid Gold",0
 "YOAF","2017","letter","TRUE","Hybrid Gold",0
@@ -1448,27 +1217,6 @@
 "other","2023","note","TRUE","Hybrid Gold",3
 "TA","2023","note","TRUE","Hybrid Gold",9
 "YOAF","2023","note","TRUE","Hybrid Gold",0
-"other","2017","retracted","TRUE","Hybrid Gold",0
-"TA","2017","retracted","TRUE","Hybrid Gold",0
-"YOAF","2017","retracted","TRUE","Hybrid Gold",0
-"other","2018","retracted","TRUE","Hybrid Gold",0
-"TA","2018","retracted","TRUE","Hybrid Gold",0
-"YOAF","2018","retracted","TRUE","Hybrid Gold",0
-"other","2019","retracted","TRUE","Hybrid Gold",0
-"TA","2019","retracted","TRUE","Hybrid Gold",0
-"YOAF","2019","retracted","TRUE","Hybrid Gold",0
-"other","2020","retracted","TRUE","Hybrid Gold",0
-"TA","2020","retracted","TRUE","Hybrid Gold",0
-"YOAF","2020","retracted","TRUE","Hybrid Gold",0
-"other","2021","retracted","TRUE","Hybrid Gold",0
-"TA","2021","retracted","TRUE","Hybrid Gold",0
-"YOAF","2021","retracted","TRUE","Hybrid Gold",0
-"other","2022","retracted","TRUE","Hybrid Gold",0
-"TA","2022","retracted","TRUE","Hybrid Gold",0
-"YOAF","2022","retracted","TRUE","Hybrid Gold",0
-"other","2023","retracted","TRUE","Hybrid Gold",0
-"TA","2023","retracted","TRUE","Hybrid Gold",0
-"YOAF","2023","retracted","TRUE","Hybrid Gold",0
 "other","2017","review","TRUE","Hybrid Gold",12
 "TA","2017","review","TRUE","Hybrid Gold",5
 "YOAF","2017","review","TRUE","Hybrid Gold",7
@@ -1637,27 +1385,6 @@
 "other","2023","editorial","FALSE","Not Open Access",50
 "TA","2023","editorial","FALSE","Not Open Access",0
 "YOAF","2023","editorial","FALSE","Not Open Access",0
-"other","2017","erratum","FALSE","Not Open Access",4
-"TA","2017","erratum","FALSE","Not Open Access",0
-"YOAF","2017","erratum","FALSE","Not Open Access",0
-"other","2018","erratum","FALSE","Not Open Access",13
-"TA","2018","erratum","FALSE","Not Open Access",0
-"YOAF","2018","erratum","FALSE","Not Open Access",0
-"other","2019","erratum","FALSE","Not Open Access",8
-"TA","2019","erratum","FALSE","Not Open Access",0
-"YOAF","2019","erratum","FALSE","Not Open Access",0
-"other","2020","erratum","FALSE","Not Open Access",12
-"TA","2020","erratum","FALSE","Not Open Access",0
-"YOAF","2020","erratum","FALSE","Not Open Access",0
-"other","2021","erratum","FALSE","Not Open Access",10
-"TA","2021","erratum","FALSE","Not Open Access",0
-"YOAF","2021","erratum","FALSE","Not Open Access",0
-"other","2022","erratum","FALSE","Not Open Access",8
-"TA","2022","erratum","FALSE","Not Open Access",0
-"YOAF","2022","erratum","FALSE","Not Open Access",0
-"other","2023","erratum","FALSE","Not Open Access",7
-"TA","2023","erratum","FALSE","Not Open Access",0
-"YOAF","2023","erratum","FALSE","Not Open Access",0
 "other","2017","letter","FALSE","Not Open Access",20
 "TA","2017","letter","FALSE","Not Open Access",0
 "YOAF","2017","letter","FALSE","Not Open Access",0
@@ -1700,27 +1427,6 @@
 "other","2023","note","FALSE","Not Open Access",14
 "TA","2023","note","FALSE","Not Open Access",0
 "YOAF","2023","note","FALSE","Not Open Access",0
-"other","2017","retracted","FALSE","Not Open Access",0
-"TA","2017","retracted","FALSE","Not Open Access",0
-"YOAF","2017","retracted","FALSE","Not Open Access",0
-"other","2018","retracted","FALSE","Not Open Access",0
-"TA","2018","retracted","FALSE","Not Open Access",0
-"YOAF","2018","retracted","FALSE","Not Open Access",0
-"other","2019","retracted","FALSE","Not Open Access",0
-"TA","2019","retracted","FALSE","Not Open Access",0
-"YOAF","2019","retracted","FALSE","Not Open Access",0
-"other","2020","retracted","FALSE","Not Open Access",0
-"TA","2020","retracted","FALSE","Not Open Access",0
-"YOAF","2020","retracted","FALSE","Not Open Access",0
-"other","2021","retracted","FALSE","Not Open Access",0
-"TA","2021","retracted","FALSE","Not Open Access",0
-"YOAF","2021","retracted","FALSE","Not Open Access",0
-"other","2022","retracted","FALSE","Not Open Access",0
-"TA","2022","retracted","FALSE","Not Open Access",0
-"YOAF","2022","retracted","FALSE","Not Open Access",0
-"other","2023","retracted","FALSE","Not Open Access",0
-"TA","2023","retracted","FALSE","Not Open Access",0
-"YOAF","2023","retracted","FALSE","Not Open Access",0
 "other","2017","review","FALSE","Not Open Access",48
 "TA","2017","review","FALSE","Not Open Access",0
 "YOAF","2017","review","FALSE","Not Open Access",0
@@ -1889,27 +1595,6 @@
 "other","2023","editorial","TRUE","Not Open Access",13
 "TA","2023","editorial","TRUE","Not Open Access",0
 "YOAF","2023","editorial","TRUE","Not Open Access",0
-"other","2017","erratum","TRUE","Not Open Access",0
-"TA","2017","erratum","TRUE","Not Open Access",0
-"YOAF","2017","erratum","TRUE","Not Open Access",0
-"other","2018","erratum","TRUE","Not Open Access",2
-"TA","2018","erratum","TRUE","Not Open Access",0
-"YOAF","2018","erratum","TRUE","Not Open Access",0
-"other","2019","erratum","TRUE","Not Open Access",3
-"TA","2019","erratum","TRUE","Not Open Access",0
-"YOAF","2019","erratum","TRUE","Not Open Access",0
-"other","2020","erratum","TRUE","Not Open Access",7
-"TA","2020","erratum","TRUE","Not Open Access",0
-"YOAF","2020","erratum","TRUE","Not Open Access",0
-"other","2021","erratum","TRUE","Not Open Access",6
-"TA","2021","erratum","TRUE","Not Open Access",0
-"YOAF","2021","erratum","TRUE","Not Open Access",0
-"other","2022","erratum","TRUE","Not Open Access",1
-"TA","2022","erratum","TRUE","Not Open Access",0
-"YOAF","2022","erratum","TRUE","Not Open Access",0
-"other","2023","erratum","TRUE","Not Open Access",1
-"TA","2023","erratum","TRUE","Not Open Access",0
-"YOAF","2023","erratum","TRUE","Not Open Access",0
 "other","2017","letter","TRUE","Not Open Access",11
 "TA","2017","letter","TRUE","Not Open Access",0
 "YOAF","2017","letter","TRUE","Not Open Access",0
@@ -1952,27 +1637,6 @@
 "other","2023","note","TRUE","Not Open Access",18
 "TA","2023","note","TRUE","Not Open Access",0
 "YOAF","2023","note","TRUE","Not Open Access",0
-"other","2017","retracted","TRUE","Not Open Access",0
-"TA","2017","retracted","TRUE","Not Open Access",0
-"YOAF","2017","retracted","TRUE","Not Open Access",0
-"other","2018","retracted","TRUE","Not Open Access",0
-"TA","2018","retracted","TRUE","Not Open Access",0
-"YOAF","2018","retracted","TRUE","Not Open Access",0
-"other","2019","retracted","TRUE","Not Open Access",0
-"TA","2019","retracted","TRUE","Not Open Access",0
-"YOAF","2019","retracted","TRUE","Not Open Access",0
-"other","2020","retracted","TRUE","Not Open Access",0
-"TA","2020","retracted","TRUE","Not Open Access",0
-"YOAF","2020","retracted","TRUE","Not Open Access",0
-"other","2021","retracted","TRUE","Not Open Access",0
-"TA","2021","retracted","TRUE","Not Open Access",0
-"YOAF","2021","retracted","TRUE","Not Open Access",0
-"other","2022","retracted","TRUE","Not Open Access",0
-"TA","2022","retracted","TRUE","Not Open Access",0
-"YOAF","2022","retracted","TRUE","Not Open Access",0
-"other","2023","retracted","TRUE","Not Open Access",0
-"TA","2023","retracted","TRUE","Not Open Access",0
-"YOAF","2023","retracted","TRUE","Not Open Access",0
 "other","2017","review","TRUE","Not Open Access",20
 "TA","2017","review","TRUE","Not Open Access",0
 "YOAF","2017","review","TRUE","Not Open Access",0

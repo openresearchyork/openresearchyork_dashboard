@@ -33,7 +33,9 @@ scopusCA<-list.files(path=".", pattern="^scopusUoY.*updated2024.csv$", recursive
   bind_rows %>%
   #select("Title", "Year", "Source title", "DOI", "Correspondence Address", "Publisher", "Abbreviated Source Title", "Document Type", "Open Access")%>%
   mutate(across(everything(), tolower))%>%
-  rename(Journal=`Source title`)
+  rename(Journal=`Source title`)%>%
+  filter(`Document Type`!="erratum" & `Document Type`!="retracted")%>%
+  droplevels()
 
 #add new variable 'york' based on corresponding author address
 scopusCA$york<-grepl("york", scopusCA$`Correspondence Address`)
